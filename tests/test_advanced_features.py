@@ -108,11 +108,11 @@ class TestAdvancedFeatures:
     def test_file_operations_integration(self):
         """Test file I/O operations in CodingYok"""
         with tempfile.TemporaryDirectory() as temp_dir:
-            test_file = os.path.join(temp_dir, "test.txt")
+            test_file = os.path.join(temp_dir, "test.txt").replace("\\", "/")
 
             code = f"""
-            tulis_file("{test_file}", "Hello CodingYok!")
-            content = baca_file("{test_file}")
+            tulis_file(r"{test_file}", "Hello CodingYok!")
+            content = baca_file(r"{test_file}")
             tulis(content)
             """
 
@@ -122,12 +122,12 @@ class TestAdvancedFeatures:
     def test_json_operations(self):
         """Test JSON file operations"""
         with tempfile.TemporaryDirectory() as temp_dir:
-            json_file = os.path.join(temp_dir, "test.json")
+            json_file = os.path.join(temp_dir, "test.json").replace("\\", "/")
 
             code = f"""
             data = {{"nama": "Budi", "umur": 25}}
-            tulis_json("{json_file}", data)
-            loaded_data = baca_json("{json_file}")
+            tulis_json(r"{json_file}", data)
+            loaded_data = baca_json(r"{json_file}")
             tulis(loaded_data["nama"])
             tulis(loaded_data["umur"])
             """
@@ -140,12 +140,12 @@ class TestAdvancedFeatures:
     def test_csv_operations(self):
         """Test CSV file operations"""
         with tempfile.TemporaryDirectory() as temp_dir:
-            csv_file = os.path.join(temp_dir, "test.csv")
+            csv_file = os.path.join(temp_dir, "test.csv").replace("\\", "/")
 
             code = f"""
             data = [["Nama", "Umur"], ["Budi", "25"], ["Siti", "23"]]
-            tulis_csv("{csv_file}", data)
-            loaded_data = baca_csv("{csv_file}")
+            tulis_csv(r"{csv_file}", data)
+            loaded_data = baca_csv(r"{csv_file}")
             tulis(panjang(loaded_data))
             tulis(loaded_data[1][0])  # Budi
             """

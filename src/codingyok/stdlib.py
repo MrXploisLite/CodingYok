@@ -375,7 +375,7 @@ def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
     if n % 2 == 0:
         median = (sorted_data[n // 2 - 1] + sorted_data[n // 2]) / 2
     else:
-        median = sorted_data[n // 2]
+        median = float(sorted_data[n // 2])
 
     return {
         "jumlah": total,

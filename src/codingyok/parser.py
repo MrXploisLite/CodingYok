@@ -201,14 +201,37 @@ class CodingYokParser:
         """Parse expression statement or assignment"""
         expr = self.expression()
 
-        # Check for assignment
-        if self.match(TokenType.ASSIGN):
+        # Check for assignment (including compound assignments)
+        if self.match(
+            TokenType.ASSIGN,
+            TokenType.PLUS_ASSIGN,
+            TokenType.MINUS_ASSIGN,
+            TokenType.MULTIPLY_ASSIGN,
+            TokenType.DIVIDE_ASSIGN,
+        ):
+            operator = self.previous().value
+
             if isinstance(expr, IdentifierExpression):
                 value = self.expression()
+
+                # Handle compound assignment by converting to regular assignment
+                if operator != "=":
+                    # Convert += to = var + value, etc.
+                    op_map = {"+=": "+", "-=": "-", "*=": "*", "/=": "/"}
+                    binary_op = op_map[operator]
+                    value = BinaryExpression(expr, binary_op, value)
+
                 return AssignmentStatement(expr.name, value)
             elif isinstance(expr, AttributeExpression):
                 # Handle attribute assignment (e.g., diri.nama = value)
                 value = self.expression()
+
+                # Handle compound assignment for attributes
+                if operator != "=":
+                    op_map = {"+=": "+", "-=": "-", "*=": "*", "/=": "/"}
+                    binary_op = op_map[operator]
+                    value = BinaryExpression(expr, binary_op, value)
+
                 return AttributeAssignmentStatement(expr, value)
             else:
                 self.error("Target assignment tidak valid")
@@ -358,6 +381,9 @@ class CodingYokParser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return LiteralExpression(self.previous().value)
 
+        if self.match(TokenType.F_STRING_START):
+            return self.parse_fstring(self.previous().value)
+
         if self.match(TokenType.IDENTIFIER, TokenType.DIRI):
             return IdentifierExpression(self.previous().value)
 
@@ -409,6 +435,31 @@ class CodingYokParser:
         self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}' setelah dictionary")
 
         return DictExpression(pairs)
+
+    def parse_fstring(self, parts: List[str]) -> FStringExpression:
+        """Parse f-string parts into expressions"""
+        parsed_parts = []
+
+        for part in parts:
+            if part.startswith("{EXPR:") and part.endswith("}"):
+                # Extract expression text
+                expr_text = part[6:-1]  # Remove {EXPR: and }
+
+                # Create a mini-parser for the expression
+                from .lexer import CodingYokLexer
+
+                expr_lexer = CodingYokLexer(expr_text)
+                expr_tokens = expr_lexer.tokenize()
+
+                # Create a mini-parser for the expression
+                expr_parser = CodingYokParser(expr_tokens)
+                expr = expr_parser.expression()
+                parsed_parts.append(expr)
+            else:
+                # Regular string part
+                parsed_parts.append(part)
+
+        return FStringExpression(parsed_parts)
 
     def function_definition(self) -> FunctionDefinition:
         """Parse function definition"""

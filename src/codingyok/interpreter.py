@@ -421,6 +421,18 @@ class CodingYokInterpreter:
             result[key] = value
         return result
 
+    def visit_fstring(self, expr: FStringExpression) -> str:
+        """Visit f-string expression"""
+        result = ""
+        for part in expr.parts:
+            if isinstance(part, str):
+                result += part
+            else:
+                # Evaluate the expression and convert to string
+                value = self.evaluate(part)
+                result += self.stringify(value)
+        return result
+
     # Helper methods
     def is_truthy(self, value: Any) -> bool:
         """Determine if value is truthy"""

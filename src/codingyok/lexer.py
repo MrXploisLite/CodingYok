@@ -139,6 +139,99 @@ class CodingYokLexer:
 
         return comment.strip()
 
+    def read_fstring(self, quote_char: str) -> None:
+        """Read f-string literal with basic interpolation support"""
+        start_column = self.column
+        self.advance()  # Skip quote
+
+        parts = []
+        current_text = ""
+
+        while True:
+            char = self.peek()
+            if char is None:
+                self.error(f"F-string tidak ditutup dengan {quote_char}")
+
+            if char == quote_char:
+                self.advance()  # Skip closing quote
+                if current_text:
+                    parts.append(current_text)
+                break
+
+            if char == "{":
+                # Found interpolation start
+                if current_text:
+                    parts.append(current_text)
+                    current_text = ""
+
+                self.advance()  # Skip {
+                expr_text = ""
+                brace_count = 1
+
+                # Read until matching }
+                while brace_count > 0:
+                    char = self.peek()
+                    if char is None:
+                        self.error("F-string expression tidak ditutup dengan '}'")
+
+                    if char == "{":
+                        brace_count += 1
+                    elif char == "}":
+                        brace_count -= 1
+
+                    if brace_count > 0 and char is not None:
+                        expr_text += char
+
+                    self.advance()
+
+                # Store expression text for later parsing
+                parts.append(f"{{EXPR:{expr_text}}}")
+
+            elif char == "\\":
+                self.advance()  # Skip backslash
+                escaped = self.advance()
+                if escaped is not None:
+                    escape_map = {
+                        "n": "\n",
+                        "t": "\t",
+                        "r": "\r",
+                        "\\": "\\",
+                        "'": "'",
+                        '"': '"',
+                    }
+                    current_text += escape_map.get(escaped, escaped)
+            else:
+                if char is not None:
+                    current_text += char
+                self.advance()
+
+        # Create a special f-string token with the parts
+        self.tokens.append(
+            Token(TokenType.F_STRING_START, parts, self.line, start_column)
+        )
+
+    def read_raw_string(self, quote_char: str) -> None:
+        """Read raw string literal (no escape sequences processed)"""
+        start_column = self.column
+        self.advance()  # Skip quote
+
+        value = ""
+        while True:
+            char = self.peek()
+            if char is None:
+                self.error(f"Raw string tidak ditutup dengan {quote_char}")
+
+            if char == quote_char:
+                self.advance()  # Skip closing quote
+                break
+
+            # In raw strings, backslashes are literal
+            if char is not None:
+                value += char
+            self.advance()
+
+        self.tokens.append(Token(TokenType.STRING, value, self.line, start_column))
+
     def handle_indentation(self, line_start_pos: int) -> List[Token]:
         """Handle indentation at start of line"""
         indent_tokens = []
@@ -218,7 +311,7 @@ class CodingYokLexer:
                 )
                 continue
 
-            # String literals
+            # String literals (including f-strings)
             if char in "\"'":
                 start_column = self.column
                 string_value = self.read_string(char)
@@ -236,10 +329,20 @@ class CodingYokLexer:
                 )
                 continue
 
-            # Identifiers and keywords
+            # Identifiers and keywords (including f-strings)
             if char.isalpha() or char == "_":
                 start_column = self.column
                 identifier = self.read_identifier()
+
+                # Check for f-string or raw string
+                next_char = self.peek()
+                if identifier == "f" and next_char and next_char in "\"'":
+                    self.read_fstring(next_char)
+                    continue
+                elif identifier == "r" and next_char and next_char in "\"'":
+                    self.read_raw_string(next_char)
+                    continue
+
                 token_type = INDONESIAN_KEYWORDS.get(identifier, TokenType.IDENTIFIER)
 
                 # Convert boolean and None values

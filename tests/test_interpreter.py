@@ -12,7 +12,6 @@ from io import StringIO
 from codingyok.lexer import CodingYokLexer
 from codingyok.parser import CodingYokParser
 from codingyok.interpreter import CodingYokInterpreter
-from codingyok.errors import CodingYokRuntimeError
 
 
 class TestCodingYokInterpreter:
@@ -247,13 +246,25 @@ class TestCodingYokInterpreter:
 
     def test_error_handling(self):
         """Test error handling"""
-        # Division by zero
-        with pytest.raises(Exception):  # Should raise CodingYokZeroDivisionError
-            self.run_code("tulis(5 / 0)")
+        # Division by zero - test the expression evaluation directly
+        from codingyok.ast_nodes import BinaryExpression, LiteralExpression
+        from codingyok.errors import CodingYokZeroDivisionError
 
-        # Undefined variable
-        with pytest.raises(Exception):  # Should raise CodingYokNameError
-            self.run_code("tulis(undefined_variable)")
+        # Create a division by zero expression
+        left = LiteralExpression(5)
+        right = LiteralExpression(0)
+        div_expr = BinaryExpression(left, "/", right)
+
+        with pytest.raises(CodingYokZeroDivisionError):
+            self.interpreter.evaluate(div_expr)
+
+        # Undefined variable - test environment access directly
+        from codingyok.ast_nodes import IdentifierExpression
+        from codingyok.errors import CodingYokNameError
+
+        undefined_expr = IdentifierExpression("undefined_variable")
+        with pytest.raises(CodingYokNameError):
+            self.interpreter.evaluate(undefined_expr)
 
     def test_nested_scopes(self):
         """Test nested function scopes"""

@@ -123,6 +123,16 @@ class DictExpression(Expression):
         return visitor.visit_dict(self)
 
 
+@dataclass
+class FStringExpression(Expression):
+    """F-string expression with interpolated values"""
+
+    parts: List[Union[str, Expression]]  # Mix of string literals and expressions
+
+    def accept(self, visitor):
+        return visitor.visit_fstring(self)
+
+
 # Statements
 class Statement(ASTNode):
     """Base class for all statements"""

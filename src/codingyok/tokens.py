@@ -11,6 +11,9 @@ class TokenType(Enum):
     # Literals
     NUMBER = auto()
     STRING = auto()
+    F_STRING_START = auto()  # f"text {
+    F_STRING_MID = auto()  # } text {
+    F_STRING_END = auto()  # } text"
     IDENTIFIER = auto()
 
     # Keywords (Indonesian)
