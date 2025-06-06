@@ -2,13 +2,16 @@
 Unit tests for CodingYok interpreter
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 import pytest
 from io import StringIO
-import sys
-from src.codingyok.lexer import CodingYokLexer
-from src.codingyok.parser import CodingYokParser
-from src.codingyok.interpreter import CodingYokInterpreter
-from src.codingyok.errors import CodingYokRuntimeError
+from codingyok.lexer import CodingYokLexer
+from codingyok.parser import CodingYokParser
+from codingyok.interpreter import CodingYokInterpreter
+from codingyok.errors import CodingYokRuntimeError
 
 
 class TestCodingYokInterpreter:

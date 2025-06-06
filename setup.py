@@ -4,17 +4,22 @@ Setup script for CodingYok Programming Language
 """
 
 from setuptools import setup, find_packages
-import os
 
 # Read README for long description
 def read_readme():
-    with open("README.md", "r", encoding="utf-8") as fh:
-        return fh.read()
+    try:
+        with open("README.md", "r", encoding="utf-8") as fh:
+            return fh.read()
+    except FileNotFoundError:
+        return "CodingYok - Bahasa Pemrograman Indonesia"
 
 # Read requirements
 def read_requirements():
-    with open("requirements.txt", "r", encoding="utf-8") as fh:
-        return [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+    try:
+        with open("requirements.txt", "r", encoding="utf-8") as fh:
+            return [line.strip() for line in fh if line.strip() and not line.startswith("#")]
+    except FileNotFoundError:
+        return []
 
 setup(
     name="codingyok",
@@ -42,7 +47,7 @@ setup(
         "Natural Language :: Indonesian",
     ],
     python_requires=">=3.8",
-    install_requires=read_requirements() if os.path.exists("requirements.txt") else [],
+    install_requires=read_requirements(),
     extras_require={
         "dev": [
             "pytest>=6.0",

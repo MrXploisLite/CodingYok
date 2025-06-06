@@ -15,38 +15,39 @@ profil = {
 
 # Menampilkan informasi
 tulis("=== PROFIL PENGGUNA ===")
-tulis(f"Nama: {nama}")
-tulis(f"Umur: {umur} tahun")
-tulis(f"Tinggi: {tinggi} cm")
-tulis(f"Status: {'Menikah' jika sudah_menikah kalau_tidak 'Belum Menikah'}")
+tulis("Nama:", nama)
+tulis("Umur:", umur, "tahun")
+tulis("Tinggi:", tinggi, "cm")
+status = "Menikah" jika sudah_menikah kalau_tidak "Belum Menikah"
+tulis("Status:", status)
 
 # Menampilkan tipe data
-tulis("\n=== INFORMASI TIPE DATA ===")
-tulis(f"Tipe nama: {tipe(nama)}")
-tulis(f"Tipe umur: {tipe(umur)}")
-tulis(f"Tipe tinggi: {tipe(tinggi)}")
-tulis(f"Tipe hobi: {tipe(hobi)}")
-tulis(f"Tipe profil: {tipe(profil)}")
+tulis("=== INFORMASI TIPE DATA ===")
+tulis("Tipe nama:", tipe(nama))
+tulis("Tipe umur:", tipe(umur))
+tulis("Tipe tinggi:", tipe(tinggi))
+tulis("Tipe hobi:", tipe(hobi))
+tulis("Tipe profil:", tipe(profil))
 
 # Operasi dengan variabel
-tulis("\n=== OPERASI MATEMATIKA ===")
+tulis("=== OPERASI MATEMATIKA ===")
 tahun_lahir = 2024 - umur
-tulis(f"Tahun lahir: {tahun_lahir}")
+tulis("Tahun lahir:", tahun_lahir)
 
 tinggi_meter = tinggi / 100
-tulis(f"Tinggi dalam meter: {tinggi_meter}")
+tulis("Tinggi dalam meter:", tinggi_meter)
 
 # Bekerja dengan list
-tulis("\n=== HOBI ===")
-tulis(f"Jumlah hobi: {panjang(hobi)}")
+tulis("=== HOBI ===")
+tulis("Jumlah hobi:", panjang(hobi))
 untuk hobby dalam hobi:
-    tulis(f"- {hobby}")
+    tulis("-", hobby)
 
 # Menambah hobi baru
 hobi.append("memasak")
-tulis(f"Hobi setelah ditambah: {hobi}")
+tulis("Hobi setelah ditambah:", hobi)
 
 # Bekerja dengan dictionary
-tulis("\n=== PROFIL LENGKAP ===")
+tulis("=== PROFIL LENGKAP ===")
 untuk kunci, nilai dalam profil.items():
-    tulis(f"{kunci}: {nilai}")
+    tulis(kunci + ":", nilai)

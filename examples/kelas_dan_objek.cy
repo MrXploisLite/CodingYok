@@ -11,19 +11,19 @@ kelas Orang:
         diri.hobi = []
     
     fungsi perkenalan(diri):
-        tulis(f"Halo, nama saya {diri.nama}, umur {diri.umur} tahun.")
+        tulis(str(diri.umur)
     
     fungsi tambah_hobi(diri, hobi):
         diri.hobi.append(hobi)
-        tulis(f"{diri.nama} sekarang suka {hobi}")
+        tulis(str(hobi)
     
     fungsi tampilkan_hobi(diri):
         jika panjang(diri.hobi) == 0:
-            tulis(f"{diri.nama} belum memiliki hobi")
+            tulis(str(diri.nama)
         kalau_tidak:
-            tulis(f"Hobi {diri.nama}:")
+            tulis(str(diri.nama)
             untuk hobi dalam diri.hobi:
-                tulis(f"  - {hobi}")
+                tulis(str(hobi)
 
 # Kelas dengan inheritance
 kelas Mahasiswa(Orang):
@@ -39,12 +39,12 @@ kelas Mahasiswa(Orang):
         diri.nilai = {}
     
     fungsi perkenalan(diri):
-        tulis(f"Halo, saya {diri.nama}, mahasiswa {diri.jurusan}")
-        tulis(f"NIM: {diri.nim}, umur {diri.umur} tahun")
+        tulis(str(diri.jurusan)
+        tulis(str(diri.umur)
     
     fungsi tambah_nilai(diri, mata_kuliah, nilai):
         diri.nilai[mata_kuliah] = nilai
-        tulis(f"Nilai {mata_kuliah}: {nilai}")
+        tulis(str(nilai)
     
     fungsi hitung_ipk(diri):
         jika panjang(diri.nilai) == 0:
@@ -54,16 +54,16 @@ kelas Mahasiswa(Orang):
         kembalikan total_nilai / panjang(diri.nilai)
     
     fungsi tampilkan_transkrip(diri):
-        tulis(f"\n=== TRANSKRIP {diri.nama} ===")
-        tulis(f"NIM: {diri.nim}")
-        tulis(f"Jurusan: {diri.jurusan}")
+        tulis(str(diri.nama)
+        tulis(str(diri.nim)
+        tulis(str(diri.jurusan)
         tulis("Nilai:")
         
         untuk mk, nilai dalam diri.nilai.items():
-            tulis(f"  {mk}: {nilai}")
+            tulis(str(nilai)
         
         ipk = diri.hitung_ipk()
-        tulis(f"IPK: {bulat(ipk, 2)}")
+        tulis(str(bulat(ipk, 2))
 
 # Kelas untuk sistem perpustakaan
 kelas Buku:
@@ -76,26 +76,26 @@ kelas Buku:
     
     fungsi info(diri):
         status = "Dipinjam" jika diri.dipinjam kalau_tidak "Tersedia"
-        tulis(f"'{diri.judul}' oleh {diri.penulis} ({diri.tahun}) - {status}")
+        tulis(str(status)
     
     fungsi pinjam(diri, peminjam):
         jika diri.dipinjam:
-            tulis(f"Buku '{diri.judul}' sedang dipinjam oleh {diri.peminjam}")
+            tulis(str(diri.peminjam)
             kembalikan salah
         kalau_tidak:
             diri.dipinjam = benar
             diri.peminjam = peminjam
-            tulis(f"Buku '{diri.judul}' berhasil dipinjam oleh {peminjam}")
+            tulis(str(peminjam)
             kembalikan benar
     
     fungsi kembalikan_buku(diri):
         jika bukan diri.dipinjam:
-            tulis(f"Buku '{diri.judul}' tidak sedang dipinjam")
+            tulis(str(diri.judul)
         kalau_tidak:
             peminjam_lama = diri.peminjam
             diri.dipinjam = salah
             diri.peminjam = kosong
-            tulis(f"Buku '{diri.judul}' dikembalikan oleh {peminjam_lama}")
+            tulis(str(peminjam_lama)
 
 kelas Perpustakaan:
     fungsi __init__(diri, nama):
@@ -105,10 +105,10 @@ kelas Perpustakaan:
     
     fungsi tambah_buku(diri, buku):
         diri.koleksi.append(buku)
-        tulis(f"Buku '{buku.judul}' ditambahkan ke {diri.nama}")
+        tulis(str(diri.nama)
     
     fungsi daftar_buku(diri):
-        tulis(f"\n=== KOLEKSI {diri.nama} ===")
+        tulis(str(diri.nama)
         untuk i, buku dalam enumerate(diri.koleksi, 1):
             tulis(f"{i}. ", end="")
             buku.info()

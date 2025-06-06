@@ -3,17 +3,19 @@ Unit tests for advanced CodingYok features
 Tests classes, Indonesian features, file I/O, and web functionality
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 import pytest
 import tempfile
-import os
 from io import StringIO
-import sys
-from src.codingyok.lexer import CodingYokLexer
-from src.codingyok.parser import CodingYokParser
-from src.codingyok.interpreter import CodingYokInterpreter
-from src.codingyok.errors import CodingYokRuntimeError
-from src.codingyok.indonesia import format_rupiah, angka_ke_kata, tanggal_indonesia
-from src.codingyok.fileio import baca_file, tulis_file
+from codingyok.lexer import CodingYokLexer
+from codingyok.parser import CodingYokParser
+from codingyok.interpreter import CodingYokInterpreter
+from codingyok.errors import CodingYokRuntimeError
+from codingyok.indonesia import format_rupiah, angka_ke_kata, tanggal_indonesia
+from codingyok.fileio import baca_file, tulis_file
 
 
 class TestAdvancedFeatures:

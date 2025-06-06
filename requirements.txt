@@ -1,18 +1,18 @@
-# Core dependencies for CodingYok interpreter
-colorama>=0.4.4          # Cross-platform colored terminal text
-click>=8.0.0             # Command line interface creation
-rich>=12.0.0             # Rich text and beautiful formatting
-typing-extensions>=4.0.0 # Backport of typing features
+# CodingYok - Pure Python Implementation
+# No external dependencies required for core functionality
 
-# Optional dependencies for enhanced features
-requests>=2.25.0         # HTTP library for web features
-python-dateutil>=2.8.0   # Extended date/time handling
-babel>=2.9.0             # Internationalization utilities
+# All features are implemented using Python standard library:
+# - Lexer, Parser, Interpreter: Pure Python
+# - Indonesian features: Built-in
+# - File I/O: Standard library
+# - Web server: http.server (standard library)
+# - JSON/CSV: json, csv (standard library)
+# - Regex: re (standard library)
+# - Math functions: math (standard library)
 
-# Development dependencies (optional, installed via pip install -e .[dev])
+# Development dependencies (install with: pip install -e .[dev])
 # pytest>=6.0
 # pytest-cov>=2.0
 # black>=21.0
 # mypy>=0.900
 # flake8>=3.8
-# pre-commit>=2.0

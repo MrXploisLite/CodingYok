@@ -2,10 +2,14 @@
 Unit tests for CodingYok lexer
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
 import pytest
-from src.codingyok.lexer import CodingYokLexer
-from src.codingyok.tokens import TokenType, Token
-from src.codingyok.errors import CodingYokSyntaxError
+from codingyok.lexer import CodingYokLexer
+from codingyok.tokens import TokenType, Token
+from codingyok.errors import CodingYokSyntaxError
 
 
 class TestCodingYokLexer:

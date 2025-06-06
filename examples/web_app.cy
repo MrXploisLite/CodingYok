@@ -310,7 +310,7 @@ data_mahasiswa.extend([
     }
 ])
 
-tulis(f"Data contoh ditambahkan: {panjang(data_mahasiswa)} mahasiswa")
+tulis(str(panjang(data_mahasiswa))
 tulis("\nMemulai server web...")
 tulis("Buka browser dan akses: http://localhost:8080")
 tulis("Tekan Ctrl+C untuk menghentikan server")

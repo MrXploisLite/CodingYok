@@ -23,15 +23,15 @@ tulis(isi_file)
 
 # Baca per baris
 baris_file = baca_baris("contoh.txt")
-tulis(f"\nFile memiliki {panjang(baris_file)} baris:")
+tulis(str(panjang(baris_file))
 untuk i, baris dalam enumerate(baris_file, 1):
-    tulis(f"  Baris {i}: {baris}")
+    tulis(str(baris)
 
 # Info file
 info = info_file("contoh.txt")
-tulis(f"\nInfo file:")
-tulis(f"  Ukuran: {info['ukuran']} bytes")
-tulis(f"  Adalah file: {info['adalah_file']}")
+tulis("\nInfo file:"
+tulis(str(info['ukuran'])
+tulis(str(info['adalah_file'])
 
 # 2. Operasi JSON
 tulis("\n2. OPERASI JSON")
@@ -58,13 +58,13 @@ tulis("Data mahasiswa disimpan ke 'mahasiswa.json'")
 # Baca dari JSON
 data_terbaca = baca_json("mahasiswa.json")
 tulis("Data yang dibaca dari JSON:")
-tulis(f"  Nama: {data_terbaca['nama']}")
-tulis(f"  NIM: {data_terbaca['nim']}")
-tulis(f"  Jurusan: {data_terbaca['jurusan']}")
+tulis(str(data_terbaca['nama'])
+tulis(str(data_terbaca['nim'])
+tulis(str(data_terbaca['jurusan'])
 
 tulis("  Nilai:")
 untuk mk, nilai dalam data_terbaca['nilai'].items():
-    tulis(f"    {mk}: {nilai}")
+    tulis(str(nilai)
 
 # 3. Operasi CSV
 tulis("\n3. OPERASI CSV")
@@ -104,11 +104,11 @@ untuk row dalam data_rows:
 # Hitung statistik
 stats = hitung_statistik(gaji_list)
 tulis("Statistik Gaji Karyawan:")
-tulis(f"  Rata-rata: {format_rupiah(stats['rata_rata'])}")
-tulis(f"  Median: {format_rupiah(stats['median'])}")
-tulis(f"  Minimum: {format_rupiah(stats['minimum'])}")
-tulis(f"  Maksimum: {format_rupiah(stats['maksimum'])}")
-tulis(f"  Standar Deviasi: {format_rupiah(stats['standar_deviasi'])}")
+tulis(str(format_rupiah(stats['rata_rata']))
+tulis(str(format_rupiah(stats['median']))
+tulis(str(format_rupiah(stats['minimum']))
+tulis(str(format_rupiah(stats['maksimum']))
+tulis(str(format_rupiah(stats['standar_deviasi']))
 
 # 5. Pattern Matching dan Validasi
 tulis("\n5. PATTERN MATCHING DAN VALIDASI")
@@ -129,27 +129,27 @@ baris_data = pisah("\n", isi)
 
 tulis("Analisis data:")
 untuk baris dalam baris_data:
-    tulis(f"  {baris}")
+    tulis(str(baris)
     
     # Cari email
     email_match = cari_pola(r'[\w\.-]+@[\w\.-]+\.\w+', baris)
     jika email_match:
         valid = validasi_email(email_match)
         status = "Valid" jika valid kalau_tidak "Tidak Valid"
-        tulis(f"    -> Email ditemukan: {email_match} ({status})")
+        tulis(str(status)
     
     # Cari URL
     url_match = cari_pola(r'https?://[\w\.-]+', baris)
     jika url_match:
         valid = validasi_url(url_match)
         status = "Valid" jika valid kalau_tidak "Tidak Valid"
-        tulis(f"    -> URL ditemukan: {url_match} ({status})")
+        tulis(str(status)
     
     # Cari nomor telepon
     phone_match = cari_pola(r'08\d{8,10}', baris)
     jika phone_match:
         formatted = format_nomor_telepon(phone_match)
-        tulis(f"    -> Telepon ditemukan: {formatted}")
+        tulis(str(formatted)
 
 # 6. Aplikasi Praktis: Log Analyzer
 tulis("\n6. APLIKASI: ANALISIS LOG")
@@ -184,13 +184,13 @@ untuk line dalam log_lines:
             log_stats[level] += 1
 
 untuk level, count dalam log_stats.items():
-    tulis(f"  {level}: {count} entries")
+    tulis(str(count)
 
 # Cari error entries
 tulis("\nError entries:")
 untuk line dalam log_lines:
     jika "ERROR" dalam line:
-        tulis(f"  {line}")
+        tulis(str(line)
 
 # 7. Cleanup
 tulis("\n7. CLEANUP")
@@ -199,6 +199,6 @@ files_to_clean = ["contoh.txt", "mahasiswa.json", "karyawan.csv", "data_campuran
 untuk file dalam files_to_clean:
     jika ada_file(file):
         hapus_file(file)
-        tulis(f"File '{file}' dihapus")
+        tulis(str(file)
 
 tulis("\n=== SELESAI ===")
