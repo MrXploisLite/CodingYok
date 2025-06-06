@@ -252,9 +252,48 @@ class ClassDefinition(Statement):
     name: str
     superclass: Optional[str]
     methods: List[FunctionDefinition]
-    
+
     def accept(self, visitor):
         return visitor.visit_class_def(self)
+
+
+@dataclass
+class TryStatement(Statement):
+    """coba statement"""
+    try_block: List[Statement]
+    except_clauses: List['ExceptClause']
+    finally_block: Optional[List[Statement]]
+
+    def accept(self, visitor):
+        return visitor.visit_try(self)
+
+
+@dataclass
+class ExceptClause:
+    """kecuali clause"""
+    exception_type: Optional[str]
+    exception_name: Optional[str]
+    body: List[Statement]
+
+
+@dataclass
+class RaiseStatement(Statement):
+    """lempar statement"""
+    exception: Optional[Expression]
+
+    def accept(self, visitor):
+        return visitor.visit_raise(self)
+
+
+@dataclass
+class WithStatement(Statement):
+    """dengan statement"""
+    context_expr: Expression
+    target: Optional[str]
+    body: List[Statement]
+
+    def accept(self, visitor):
+        return visitor.visit_with(self)
 
 
 @dataclass

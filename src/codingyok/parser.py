@@ -114,15 +114,26 @@ class CodingYokParser:
             # Jump statements
             if self.match(TokenType.KEMBALIKAN):
                 return self.return_statement()
-            
+
             if self.match(TokenType.BERHENTI):
                 return BreakStatement()
-            
+
             if self.match(TokenType.LANJUT):
                 return ContinueStatement()
-            
+
             if self.match(TokenType.LEWATI):
                 return PassStatement()
+
+            # Exception handling
+            if self.match(TokenType.COBA):
+                return self.try_statement()
+
+            if self.match(TokenType.LEMPAR):
+                return self.raise_statement()
+
+            # Context manager
+            if self.match(TokenType.DENGAN):
+                return self.with_statement()
             
             # Import statements
             if self.match(TokenType.IMPOR):
@@ -542,3 +553,55 @@ class CodingYokParser:
         self.consume(TokenType.DEDENT, "Diharapkan dedent setelah blok")
 
         return statements
+
+    def try_statement(self) -> TryStatement:
+        """Parse try statement"""
+        self.consume(TokenType.COLON, "Diharapkan ':' setelah 'coba'")
+        try_block = self.block()
+
+        except_clauses = []
+        while self.match(TokenType.KECUALI):
+            exception_type = None
+            exception_name = None
+
+            # Optional exception type
+            if self.check(TokenType.IDENTIFIER):
+                exception_type = self.advance().value
+
+                # Optional 'sebagai' name
+                if self.match(TokenType.SEBAGAI):
+                    exception_name = self.consume(TokenType.IDENTIFIER, "Diharapkan nama exception").value
+
+            self.consume(TokenType.COLON, "Diharapkan ':' setelah kecuali")
+            except_body = self.block()
+
+            except_clauses.append(ExceptClause(exception_type, exception_name, except_body))
+
+        finally_block = None
+        if self.match(TokenType.AKHIRNYA):
+            self.consume(TokenType.COLON, "Diharapkan ':' setelah 'akhirnya'")
+            finally_block = self.block()
+
+        return TryStatement(try_block, except_clauses, finally_block)
+
+    def raise_statement(self) -> RaiseStatement:
+        """Parse raise statement"""
+        exception = None
+
+        if not self.check(TokenType.NEWLINE) and not self.is_at_end():
+            exception = self.expression()
+
+        return RaiseStatement(exception)
+
+    def with_statement(self) -> WithStatement:
+        """Parse with statement"""
+        context_expr = self.expression()
+
+        target = None
+        if self.match(TokenType.SEBAGAI):
+            target = self.consume(TokenType.IDENTIFIER, "Diharapkan nama variabel setelah 'sebagai'").value
+
+        self.consume(TokenType.COLON, "Diharapkan ':' setelah ekspresi dengan")
+        body = self.block()
+
+        return WithStatement(context_expr, target, body)

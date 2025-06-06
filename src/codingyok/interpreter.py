@@ -9,6 +9,10 @@ from .ast_nodes import *
 from .errors import *
 from .environment import Environment
 from .stdlib import get_builtin_functions
+from .indonesia import get_indonesian_functions
+from .fileio import get_fileio_functions
+from .web import get_web_functions
+from .classes import CodingYokClass, CodingYokInstance, CodingYokMethod, create_builtin_exceptions
 
 
 class CodingYokFunction:
@@ -84,6 +88,26 @@ class CodingYokInterpreter:
         builtins = get_builtin_functions()
         for name, func in builtins.items():
             self.globals.define(name, func)
+
+        # Add Indonesian-specific functions
+        indonesian_funcs = get_indonesian_functions()
+        for name, func in indonesian_funcs.items():
+            self.globals.define(name, func)
+
+        # Add file I/O functions
+        fileio_funcs = get_fileio_functions()
+        for name, func in fileio_funcs.items():
+            self.globals.define(name, func)
+
+        # Add web functions
+        web_funcs = get_web_functions()
+        for name, func in web_funcs.items():
+            self.globals.define(name, func)
+
+        # Add built-in exception classes
+        exceptions = create_builtin_exceptions()
+        for name, exc_class in exceptions.items():
+            self.globals.define(name, exc_class)
     
     def interpret(self, program: Program) -> None:
         """Interpret a program"""
@@ -218,8 +242,21 @@ class CodingYokInterpreter:
     
     def visit_class_def(self, stmt: ClassDefinition) -> None:
         """Visit class definition"""
-        # TODO: Implement class system
-        raise CodingYokRuntimeError("Sistem kelas belum diimplementasikan")
+        superclass = None
+        if stmt.superclass:
+            superclass_value = self.environment.get(stmt.superclass)
+            if not isinstance(superclass_value, CodingYokClass):
+                raise CodingYokRuntimeError(f"Superclass harus berupa kelas")
+            superclass = superclass_value
+
+        # Create methods dictionary
+        methods = {}
+        for method in stmt.methods:
+            methods[method.name] = CodingYokMethod(method, self.environment)
+
+        # Create class
+        klass = CodingYokClass(stmt.name, superclass, methods)
+        self.environment.define(stmt.name, klass)
     
     # Visitor methods for expressions
     def visit_literal(self, expr: LiteralExpression) -> Any:
@@ -294,12 +331,16 @@ class CodingYokInterpreter:
     def visit_call(self, expr: CallExpression) -> Any:
         """Visit call expression"""
         callee = self.evaluate(expr.callee)
-        
+
         arguments = []
         for arg in expr.arguments:
             arguments.append(self.evaluate(arg))
-        
+
         if isinstance(callee, CodingYokFunction):
+            return callee.call(self, arguments)
+        elif isinstance(callee, CodingYokClass):
+            return callee.call(self, arguments)
+        elif hasattr(callee, 'call'):
             return callee.call(self, arguments)
         elif callable(callee):
             return callee(*arguments)
@@ -309,11 +350,16 @@ class CodingYokInterpreter:
     def visit_attribute(self, expr: AttributeExpression) -> Any:
         """Visit attribute expression"""
         obj = self.evaluate(expr.object)
-        
-        if hasattr(obj, expr.attribute):
+
+        if isinstance(obj, CodingYokInstance):
+            return obj.get(expr.attribute)
+        elif hasattr(obj, expr.attribute):
             return getattr(obj, expr.attribute)
         else:
-            raise CodingYokAttributeError(type(obj).__name__, expr.attribute)
+            obj_type = type(obj).__name__
+            if isinstance(obj, CodingYokInstance):
+                obj_type = obj.klass.name
+            raise CodingYokAttributeError(obj_type, expr.attribute)
     
     def visit_index(self, expr: IndexExpression) -> Any:
         """Visit index expression"""

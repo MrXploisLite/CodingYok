@@ -44,6 +44,8 @@ class TokenType(Enum):
     TEGAS = auto()          # assert
     HAPUS = auto()          # del
     HASIL = auto()          # yield
+    LEMPAR = auto()         # raise
+    DIRI = auto()           # self
     
     # Boolean and None
     BENAR = auto()          # True
@@ -141,6 +143,8 @@ INDONESIAN_KEYWORDS = {
     'tegas': TokenType.TEGAS,
     'hapus': TokenType.HAPUS,
     'hasil': TokenType.HASIL,
+    'lempar': TokenType.LEMPAR,
+    'diri': TokenType.DIRI,
     'benar': TokenType.BENAR,
     'salah': TokenType.SALAH,
     'kosong': TokenType.KOSONG,

@@ -299,6 +299,74 @@ def ganti(text: str, old: str, new: str) -> str:
         raise CodingYokTypeError("ganti() membutuhkan teks")
 
 
+def cetak_tabel(data: List[List[Any]], header: Optional[List[str]] = None) -> None:
+    """Print data as formatted table"""
+    if not data:
+        return
+
+    # Calculate column widths
+    all_rows = []
+    if header:
+        all_rows.append([str(h) for h in header])
+
+    for row in data:
+        all_rows.append([str(cell) for cell in row])
+
+    if not all_rows:
+        return
+
+    # Calculate max width for each column
+    col_widths = []
+    for col in range(len(all_rows[0])):
+        max_width = max(len(row[col]) if col < len(row) else 0 for row in all_rows)
+        col_widths.append(max_width)
+
+    # Print header if provided
+    if header:
+        header_row = all_rows[0]
+        print("| " + " | ".join(cell.ljust(width) for cell, width in zip(header_row, col_widths)) + " |")
+        print("|" + "|".join("-" * (width + 2) for width in col_widths) + "|")
+        data_start = 1
+    else:
+        data_start = 0
+
+    # Print data rows
+    for row in all_rows[data_start:]:
+        print("| " + " | ".join(cell.ljust(width) for cell, width in zip(row, col_widths)) + " |")
+
+
+def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
+    """Calculate basic statistics for numerical data"""
+    if not data:
+        return {}
+
+    n = len(data)
+    total = sum(data)
+    rata_rata = total / n
+
+    # Calculate variance and standard deviation
+    variance = sum((x - rata_rata) ** 2 for x in data) / n
+    std_dev = variance ** 0.5
+
+    # Calculate median
+    sorted_data = sorted(data)
+    if n % 2 == 0:
+        median = (sorted_data[n//2 - 1] + sorted_data[n//2]) / 2
+    else:
+        median = sorted_data[n//2]
+
+    return {
+        'jumlah': total,
+        'rata_rata': rata_rata,
+        'median': median,
+        'minimum': min(data),
+        'maksimum': max(data),
+        'varians': variance,
+        'standar_deviasi': std_dev,
+        'jumlah_data': n
+    }
+
+
 def get_builtin_functions() -> Dict[str, Callable]:
     """Get all built-in functions"""
     return {
@@ -307,14 +375,14 @@ def get_builtin_functions() -> Dict[str, Callable]:
         'tipe': tipe,
         'rentang': rentang,
         'masukan': masukan,
-        
+
         # Type conversion
         'int': int_indo,
         'float': float_indo,
         'str': str_indo,
         'daftar': daftar,
         'kamus': kamus,
-        
+
         # Math functions
         'jumlah': jumlah,
         'maksimum': maksimum,
@@ -328,25 +396,29 @@ def get_builtin_functions() -> Dict[str, Callable]:
         'sin': sin_indo,
         'cos': cos_indo,
         'tan': tan_indo,
-        
+
         # Time functions
         'waktu_sekarang': waktu_sekarang,
         'tidur': tidur,
         'tanggal_sekarang': tanggal_sekarang,
-        
+
         # Random functions
         'acak': acak,
         'acak_int': acak_int,
         'pilih_acak': pilih_acak,
         'acak_urutan': acak_urutan,
-        
+
         # String functions
         'huruf_besar': huruf_besar,
         'huruf_kecil': huruf_kecil,
         'pisah': pisah,
         'gabung': gabung,
         'ganti': ganti,
-        
+
+        # Advanced utilities
+        'cetak_tabel': cetak_tabel,
+        'hitung_statistik': hitung_statistik,
+
         # Constants
         'PI': math.pi,
         'E': math.e,

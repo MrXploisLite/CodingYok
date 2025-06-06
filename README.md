@@ -8,12 +8,31 @@
 
 ## ✨ Fitur Utama
 
-- 🇮🇩 **Keyword Bahasa Indonesia**: `tulis`, `jika`, `untuk`, `selama`, dll.
-- 🚀 **Next-Generation Features**: Built-in async/await, modern error handling
-- 📅 **Indonesian Localization**: Format tanggal, angka, dan mata uang Indonesia
-- 🔧 **Easy to Learn**: Syntax yang familiar bagi pengguna Python
-- 📚 **Rich Standard Library**: Library lengkap dengan fokus kebutuhan Indonesia
-- 🌐 **Modern Web Support**: Built-in web scraping dan HTTP client
+### 🇮🇩 **Bahasa Indonesia First**
+- **Keyword Indonesia**: `tulis`, `jika`, `untuk`, `selama`, `kelas`, `fungsi`, dll.
+- **Error Messages**: Pesan error dalam bahasa Indonesia yang mudah dipahami
+- **Built-in Indonesian Functions**: Format Rupiah, konversi angka ke kata, tanggal Indonesia
+
+### 🚀 **Next-Generation Features**
+- **Object-Oriented Programming**: Sistem kelas dengan inheritance
+- **Exception Handling**: `coba`, `kecuali`, `akhirnya` untuk error handling
+- **File I/O**: Operasi file dengan nama Indonesia (`baca_file`, `tulis_file`)
+- **Web Framework**: Built-in web server dan HTTP client
+- **Data Processing**: JSON, CSV, dan regex dengan interface Indonesia
+
+### 📊 **Indonesian-Specific Features**
+- **Format Rupiah**: `format_rupiah(1000000)` → "Rp 1.000.000"
+- **Angka ke Kata**: `angka_ke_kata(1500)` → "seribu lima ratus"
+- **Data Regional**: Database provinsi dan kota besar Indonesia
+- **Validasi Indonesia**: NIK, nomor telepon, format Indonesia
+- **Konversi Suhu**: Celsius, Fahrenheit, Kelvin dengan nama Indonesia
+
+### 🛠️ **Developer Experience**
+- **Rich Standard Library**: 100+ fungsi built-in dengan nama Indonesia
+- **Pattern Matching**: Regex dengan interface yang mudah (`cari_pola`, `ganti_pola`)
+- **Statistics**: Fungsi statistik built-in (`hitung_statistik`)
+- **Table Printing**: Format tabel otomatis (`cetak_tabel`)
+- **Modern Syntax**: Type hints dan modern programming patterns
 
 ## 🚀 Quick Start
 
@@ -85,26 +104,96 @@ hasil = sapa("Siti", 22)
 tulis(hasil)
 ```
 
-### Kelas
+### Kelas dan Inheritance
 ```codingyok
-kelas Mahasiswa:
-    fungsi __init__(diri, nama, nim):
+kelas Hewan:
+    fungsi __init__(diri, nama):
         diri.nama = nama
-        diri.nim = nim
-        diri.nilai = []
-    
-    fungsi tambah_nilai(diri, nilai):
-        diri.nilai.tambah(nilai)
-    
-    fungsi rata_rata(diri):
-        jika len(diri.nilai) == 0:
-            kembalikan 0
-        kembalikan sum(diri.nilai) / len(diri.nilai)
 
-mhs = Mahasiswa("Ahmad", "12345")
-mhs.tambah_nilai(85)
-mhs.tambah_nilai(90)
-tulis(f"Rata-rata: {mhs.rata_rata()}")
+    fungsi suara(diri):
+        tulis(f"{diri.nama} membuat suara")
+
+kelas Kucing(Hewan):
+    fungsi suara(diri):
+        tulis(f"{diri.nama} mengeong: Meow!")
+
+    fungsi main(diri):
+        tulis(f"{diri.nama} sedang bermain")
+
+kucing = Kucing("Kitty")
+kucing.suara()      # Output: Kitty mengeong: Meow!
+kucing.main()       # Output: Kitty sedang bermain
+```
+
+### Fitur Indonesia
+```codingyok
+# Format mata uang Rupiah
+harga = 1500000
+tulis(format_rupiah(harga))  # Output: Rp 1.500.000
+
+# Konversi angka ke kata Indonesia
+angka = 1500
+tulis(angka_ke_kata(angka))  # Output: seribu lima ratus
+
+# Tanggal Indonesia
+tulis(tanggal_indonesia())   # Output: Senin, 15 Januari 2024
+
+# Data provinsi Indonesia
+tulis(cek_provinsi("jabar")) # Output: Jawa Barat
+tulis(daftar_kota_besar()[:3]) # Output: ['Jakarta', 'Surabaya', 'Bandung']
+
+# Validasi data Indonesia
+tulis(validasi_nik("1234567890123456"))  # Output: benar
+tulis(format_nomor_telepon("081234567890"))  # Output: 0812 3456 7890
+```
+
+### File I/O dan Data Processing
+```codingyok
+# Operasi file
+tulis_file("data.txt", "Hello CodingYok!")
+isi = baca_file("data.txt")
+tulis(isi)  # Output: Hello CodingYok!
+
+# JSON operations
+data = {"nama": "Budi", "umur": 25, "kota": "Jakarta"}
+tulis_json("person.json", data)
+loaded = baca_json("person.json")
+tulis(loaded["nama"])  # Output: Budi
+
+# CSV operations
+csv_data = [["Nama", "Umur"], ["Budi", "25"], ["Siti", "23"]]
+tulis_csv("people.csv", csv_data)
+loaded_csv = baca_csv("people.csv")
+cetak_tabel(loaded_csv[1:], loaded_csv[0])  # Pretty table output
+
+# Pattern matching
+text = "Email: user@example.com, Phone: 081234567890"
+email = cari_pola(r'[\w\.-]+@[\w\.-]+\.\w+', text)
+tulis(email)  # Output: user@example.com
+```
+
+### Web Application
+```codingyok
+# Buat web server sederhana
+server = buat_server_web('localhost', 8080)
+
+@server.route('/')
+fungsi halaman_utama(request):
+    kembalikan """
+    <h1>Selamat Datang di CodingYok Web!</h1>
+    <p>Server web dengan bahasa Indonesia</p>
+    """
+
+@server.route('/api/data', 'POST')
+fungsi handle_data(request):
+    data = request.get('json', {})
+    kembalikan {
+        'status': 'success',
+        'message': f"Data diterima: {data}"
+    }
+
+# Jalankan server
+server.run()  # Akses di http://localhost:8080
 ```
 
 ## 🛠️ Pengembangan
