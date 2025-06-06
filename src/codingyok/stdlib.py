@@ -287,7 +287,7 @@ def huruf_kecil(text: str) -> str:
         raise CodingYokTypeError("huruf_kecil() membutuhkan teks")
 
 
-def pisah(text: str, separator: str = None) -> list:
+def pisah(text: str, separator: Optional[str] = None) -> list:
     """Split string (str.split)"""
     try:
         return text.split(separator)
@@ -389,7 +389,7 @@ def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
     }
 
 
-def get_builtin_functions() -> Dict[str, Callable]:
+def get_builtin_functions() -> Dict[str, Any]:
     """Get all built-in functions"""
     return {
         # Basic functions

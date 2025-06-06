@@ -5,7 +5,7 @@ Includes Rupiah formatting, regional data, calendar, and text processing
 
 import datetime
 import locale
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union, Callable, Any
 from .errors import CodingYokValueError
 
 
@@ -365,7 +365,7 @@ def jarak_kota(kota1: str, kota2: str) -> Optional[str]:
     return distances.get(key1) or distances.get(key2) or "Jarak tidak tersedia"
 
 
-def get_indonesian_functions() -> Dict[str, callable]:
+def get_indonesian_functions() -> Dict[str, Any]:
     """Get all Indonesian-specific functions"""
     return {
         # Currency and number formatting

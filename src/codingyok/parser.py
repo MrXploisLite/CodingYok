@@ -61,6 +61,8 @@ class CodingYokParser:
 
         current_token = self.peek()
         self.error(f"{message}. Ditemukan: {current_token.type.name}")
+        # This line should never be reached due to error() raising an exception
+        raise RuntimeError("Unreachable code")
 
     def skip_newlines(self) -> None:
         """Skip newline tokens"""
@@ -371,6 +373,8 @@ class CodingYokParser:
             return self.dict_expression()
 
         self.error("Diharapkan ekspresi")
+        # This line should never be reached due to error() raising an exception
+        raise RuntimeError("Unreachable code")
 
     def list_expression(self) -> ListExpression:
         """Parse list literal"""
@@ -412,8 +416,8 @@ class CodingYokParser:
 
         self.consume(TokenType.LEFT_PAREN, "Diharapkan '(' setelah nama fungsi")
 
-        parameters = []
-        defaults = []
+        parameters: List[str] = []
+        defaults: List[Optional[Expression]] = []
 
         if not self.check(TokenType.RIGHT_PAREN):
             # Parse parameters (allow 'diri' as special case)

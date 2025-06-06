@@ -164,7 +164,8 @@ class CodingYokInterpreter:
         """Visit attribute assignment statement"""
         from .ast_nodes import AttributeAssignmentStatement
 
-        stmt: AttributeAssignmentStatement
+        # Type annotation for the parameter
+        attr_stmt: AttributeAssignmentStatement = stmt
 
         obj = self.evaluate(stmt.target.object)
         value = self.evaluate(stmt.value)

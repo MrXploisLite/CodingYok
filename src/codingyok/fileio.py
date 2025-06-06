@@ -8,7 +8,7 @@ import json
 import csv
 import re
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 from .errors import CodingYokRuntimeError, CodingYokValueError
 
 
@@ -273,7 +273,7 @@ def validasi_url(url: str) -> bool:
     return bool(re.match(pattern, url))
 
 
-def get_fileio_functions() -> Dict[str, callable]:
+def get_fileio_functions() -> Dict[str, Any]:
     """Get all file I/O and utility functions"""
     return {
         # File operations

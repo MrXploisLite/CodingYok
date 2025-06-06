@@ -4,7 +4,7 @@ Converts source code into tokens
 """
 
 import re
-from typing import List, Optional, Iterator
+from typing import List, Optional, Iterator, Union, Any
 from .tokens import Token, TokenType, INDONESIAN_KEYWORDS, OPERATORS, DELIMITERS
 from .errors import CodingYokSyntaxError
 
@@ -47,8 +47,10 @@ class CodingYokLexer:
 
     def skip_whitespace(self) -> None:
         """Skip whitespace characters except newlines"""
-        while self.peek() and self.peek() in " \t\r":
+        char = self.peek()
+        while char and char in " \t\r":
             self.advance()
+            char = self.peek()
 
     def read_string(self, quote_char: str) -> str:
         """Read string literal"""
@@ -79,38 +81,47 @@ class CodingYokLexer:
                     "'": "'",
                     '"': '"',
                 }
-                value += escape_map.get(escaped, escaped)
+                if escaped is not None:
+                    value += escape_map.get(escaped, escaped)
             else:
-                value += char
+                if char is not None:
+                    value += char
                 self.advance()
 
         return value
 
-    def read_number(self) -> float | int:
+    def read_number(self) -> Union[float, int]:
         """Read numeric literal"""
         value = ""
         has_dot = False
 
-        while self.peek() and (self.peek().isdigit() or self.peek() == "."):
-            char = self.peek()
+        char = self.peek()
+        while char and (char.isdigit() or char == "."):
             if char == ".":
                 if has_dot:
                     break  # Second dot, stop here
                 has_dot = True
             value += char
             self.advance()
+            char = self.peek()
 
         try:
             return float(value) if has_dot else int(value)
         except ValueError:
             self.error(f"Angka tidak valid: {value}")
+            # This line should never be reached due to error() raising an exception
+            raise RuntimeError("Unreachable code")
 
     def read_identifier(self) -> str:
         """Read identifier or keyword"""
         value = ""
 
-        while self.peek() and (self.peek().isalnum() or self.peek() in "_"):
-            value += self.advance()
+        char = self.peek()
+        while char and (char.isalnum() or char in "_"):
+            char = self.advance()
+            if char is not None:
+                value += char
+            char = self.peek()
 
         return value
 
@@ -119,8 +130,12 @@ class CodingYokLexer:
         comment = ""
         self.advance()  # Skip #
 
-        while self.peek() and self.peek() != "\n":
-            comment += self.advance()
+        char = self.peek()
+        while char and char != "\n":
+            char = self.advance()
+            if char is not None:
+                comment += char
+            char = self.peek()
 
         return comment.strip()
 
@@ -169,7 +184,8 @@ class CodingYokLexer:
                 self.skip_whitespace()
 
                 # If line is not empty or comment-only
-                if self.peek() and self.peek() not in "\n#":
+                char = self.peek()
+                if char and char not in "\n#":
                     indent_tokens = self.handle_indentation(line_start_pos)
                     self.tokens.extend(indent_tokens)
 
@@ -227,6 +243,7 @@ class CodingYokLexer:
                 token_type = INDONESIAN_KEYWORDS.get(identifier, TokenType.IDENTIFIER)
 
                 # Convert boolean and None values
+                value: Any
                 if token_type == TokenType.BENAR:
                     value = True
                 elif token_type == TokenType.SALAH:

@@ -51,7 +51,10 @@ class Environment:
         """Get ancestor environment at given distance"""
         environment = self
         for _ in range(distance):
-            environment = environment.enclosing
+            if environment.enclosing is not None:
+                environment = environment.enclosing
+            else:
+                raise RuntimeError(f"Cannot access ancestor at distance {distance}")
         return environment
 
     def __str__(self) -> str:
