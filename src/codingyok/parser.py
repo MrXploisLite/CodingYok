@@ -3,7 +3,7 @@ Parser for CodingYok language
 Converts tokens into Abstract Syntax Tree (AST)
 """
 
-from typing import List, Optional, Union
+from typing import List, Optional
 from .tokens import Token, TokenType
 from .ast_nodes import *
 from .errors import CodingYokSyntaxError
@@ -438,7 +438,9 @@ class CodingYokParser:
 
     def parse_fstring(self, parts: List[str]) -> FStringExpression:
         """Parse f-string parts into expressions"""
-        parsed_parts = []
+        from typing import Union
+
+        parsed_parts: List[Union[str, Expression]] = []
 
         for part in parts:
             if part.startswith("{EXPR:") and part.endswith("}"):
