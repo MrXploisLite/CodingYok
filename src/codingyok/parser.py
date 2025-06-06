@@ -93,6 +93,10 @@ class CodingYokParser:
             if self.match(TokenType.COMMENT):
                 return None
 
+            # Skip indentation tokens at statement level
+            if self.match(TokenType.INDENT, TokenType.DEDENT):
+                return None
+
             # Function definition
             if self.match(TokenType.FUNGSI):
                 return self.function_definition()

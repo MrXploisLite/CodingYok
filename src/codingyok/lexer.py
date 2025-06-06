@@ -204,22 +204,25 @@ class CodingYokLexer:
 
             # String literals
             if char in "\"'":
+                start_column = self.column
                 string_value = self.read_string(char)
                 self.tokens.append(
-                    Token(TokenType.STRING, string_value, self.line, self.column)
+                    Token(TokenType.STRING, string_value, self.line, start_column)
                 )
                 continue
 
             # Numbers
             if char.isdigit():
+                start_column = self.column
                 number_value = self.read_number()
                 self.tokens.append(
-                    Token(TokenType.NUMBER, number_value, self.line, self.column)
+                    Token(TokenType.NUMBER, number_value, self.line, start_column)
                 )
                 continue
 
             # Identifiers and keywords
             if char.isalpha() or char == "_":
+                start_column = self.column
                 identifier = self.read_identifier()
                 token_type = INDONESIAN_KEYWORDS.get(identifier, TokenType.IDENTIFIER)
 
@@ -233,7 +236,7 @@ class CodingYokLexer:
                 else:
                     value = identifier
 
-                self.tokens.append(Token(token_type, value, self.line, self.column))
+                self.tokens.append(Token(token_type, value, self.line, start_column))
                 continue
 
             # Multi-character operators

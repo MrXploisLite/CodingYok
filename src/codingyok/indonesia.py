@@ -140,7 +140,16 @@ def format_rupiah(amount: Union[int, float], include_symbol: bool = True) -> str
         if isinstance(amount, int):
             formatted = f"{amount:,}".replace(",", ".")
         else:
-            formatted = f"{amount:,.2f}".replace(",", ".")
+            # For floats, format with Indonesian style: dots for thousands, comma for decimal
+            formatted = f"{amount:,.2f}"
+            # Replace comma (thousands) with dots, and dot (decimal) with comma
+            parts = formatted.split(".")
+            if len(parts) == 2:
+                integer_part = parts[0].replace(",", ".")
+                decimal_part = parts[1]
+                formatted = f"{integer_part},{decimal_part}"
+            else:
+                formatted = formatted.replace(",", ".")
 
         if include_symbol:
             return f"Rp {formatted}"

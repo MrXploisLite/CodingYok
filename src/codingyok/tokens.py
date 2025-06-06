@@ -43,7 +43,6 @@ class TokenType(Enum):
     NONLOKAL = auto()  # nonlocal
     TEGAS = auto()  # assert
     HAPUS = auto()  # del
-    HASIL = auto()  # yield
     LEMPAR = auto()  # raise
     DIRI = auto()  # self
 
@@ -142,7 +141,6 @@ INDONESIAN_KEYWORDS = {
     "nonlokal": TokenType.NONLOKAL,
     "tegas": TokenType.TEGAS,
     "hapus": TokenType.HAPUS,
-    "hasil": TokenType.HASIL,
     "lempar": TokenType.LEMPAR,
     "diri": TokenType.DIRI,
     "benar": TokenType.BENAR,
