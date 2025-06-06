@@ -3,7 +3,7 @@ Abstract Syntax Tree (AST) node definitions for CodingYok
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Union
+from typing import Any, List, Optional, Union, Tuple
 from dataclasses import dataclass
 
 
@@ -117,7 +117,7 @@ class ListExpression(Expression):
 class DictExpression(Expression):
     """Dictionary literals {'a': 1, 'b': 2}"""
 
-    pairs: List[tuple[Expression, Expression]]
+    pairs: List[Tuple[Expression, Expression]]
 
     def accept(self, visitor):
         return visitor.visit_dict(self)
@@ -188,7 +188,7 @@ class IfStatement(Statement):
 
     condition: Expression
     then_branch: List[Statement]
-    elif_branches: List[tuple[Expression, List[Statement]]]
+    elif_branches: List[Tuple[Expression, List[Statement]]]
     else_branch: Optional[List[Statement]]
 
     def accept(self, visitor):
