@@ -190,15 +190,19 @@ class CodingYokParser:
     def expression_statement(self) -> Statement:
         """Parse expression statement or assignment"""
         expr = self.expression()
-        
+
         # Check for assignment
         if self.match(TokenType.ASSIGN):
             if isinstance(expr, IdentifierExpression):
                 value = self.expression()
                 return AssignmentStatement(expr.name, value)
+            elif isinstance(expr, AttributeExpression):
+                # Handle attribute assignment (e.g., diri.nama = value)
+                value = self.expression()
+                return AttributeAssignmentStatement(expr, value)
             else:
                 self.error("Target assignment tidak valid")
-        
+
         return ExpressionStatement(expr)
     
     def expression(self) -> Expression:
@@ -334,7 +338,7 @@ class CodingYokParser:
         if self.match(TokenType.NUMBER, TokenType.STRING):
             return LiteralExpression(self.previous().value)
         
-        if self.match(TokenType.IDENTIFIER):
+        if self.match(TokenType.IDENTIFIER, TokenType.DIRI):
             return IdentifierExpression(self.previous().value)
         
         if self.match(TokenType.LEFT_PAREN):
@@ -394,8 +398,11 @@ class CodingYokParser:
         defaults = []
 
         if not self.check(TokenType.RIGHT_PAREN):
-            # Parse parameters
-            param = self.consume(TokenType.IDENTIFIER, "Diharapkan nama parameter").value
+            # Parse parameters (allow 'diri' as special case)
+            if self.check(TokenType.DIRI):
+                param = self.advance().value
+            else:
+                param = self.consume(TokenType.IDENTIFIER, "Diharapkan nama parameter").value
             parameters.append(param)
 
             # Check for default value
@@ -405,7 +412,10 @@ class CodingYokParser:
                 defaults.append(None)
 
             while self.match(TokenType.COMMA):
-                param = self.consume(TokenType.IDENTIFIER, "Diharapkan nama parameter").value
+                if self.check(TokenType.DIRI):
+                    param = self.advance().value
+                else:
+                    param = self.consume(TokenType.IDENTIFIER, "Diharapkan nama parameter").value
                 parameters.append(param)
 
                 if self.match(TokenType.ASSIGN):
@@ -432,9 +442,16 @@ class CodingYokParser:
         self.consume(TokenType.COLON, "Diharapkan ':' setelah definisi kelas")
 
         methods = []
+
+        # Skip newlines before indent
+        self.skip_newlines()
         self.consume(TokenType.INDENT, "Diharapkan indentasi setelah definisi kelas")
 
         while not self.check(TokenType.DEDENT) and not self.is_at_end():
+            if self.check(TokenType.NEWLINE):
+                self.advance()
+                continue
+
             if self.match(TokenType.FUNGSI):
                 methods.append(self.function_definition())
             else:

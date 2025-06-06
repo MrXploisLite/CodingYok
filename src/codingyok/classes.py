@@ -3,9 +3,13 @@ Class system implementation for CodingYok
 Supports inheritance, method resolution, and instance management
 """
 
-from typing import Any, Dict, List, Optional, Callable
+from typing import Any, Dict, List, Optional, TYPE_CHECKING
 from .errors import CodingYokRuntimeError, CodingYokAttributeError
 from .environment import Environment
+
+if TYPE_CHECKING:
+    from .interpreter import CodingYokInterpreter
+    from .ast_nodes import FunctionDefinition
 
 
 class CodingYokClass:
@@ -16,15 +20,15 @@ class CodingYokClass:
         self.superclass = superclass
         self.methods = methods
     
-    def call(self, interpreter, arguments: List[Any]) -> 'CodingYokInstance':
+    def call(self, interpreter: 'CodingYokInterpreter', arguments: List[Any]) -> 'CodingYokInstance':
         """Create new instance of the class"""
         instance = CodingYokInstance(self)
-        
+
         # Call __init__ if it exists
         initializer = self.find_method("__init__")
         if initializer:
             initializer.bind(instance).call(interpreter, arguments)
-        
+
         return instance
     
     def find_method(self, name: str) -> Optional[Any]:
@@ -74,7 +78,7 @@ class CodingYokBoundMethod:
         self.instance = instance
         self.method = method
     
-    def call(self, interpreter, arguments: List[Any]) -> Any:
+    def call(self, interpreter: 'CodingYokInterpreter', arguments: List[Any]) -> Any:
         """Call the bound method"""
         # Add 'diri' (self) as first argument
         return self.method.call(interpreter, [self.instance] + arguments)
@@ -86,8 +90,8 @@ class CodingYokBoundMethod:
 # Enhanced CodingYokFunction to support method binding
 class CodingYokMethod:
     """Represents a method that can be bound to instances"""
-    
-    def __init__(self, declaration, closure: Environment):
+
+    def __init__(self, declaration: 'FunctionDefinition', closure: Environment):
         self.declaration = declaration
         self.closure = closure
     
@@ -95,13 +99,13 @@ class CodingYokMethod:
         """Bind this method to an instance"""
         return CodingYokBoundMethod(instance, self)
     
-    def call(self, interpreter, arguments: List[Any]) -> Any:
+    def call(self, interpreter: 'CodingYokInterpreter', arguments: List[Any]) -> Any:
         """Call the method (unbound)"""
         from .interpreter import ReturnValue
-        
+
         # Create new environment for method execution
         environment = Environment(self.closure)
-        
+
         # Bind parameters
         params = self.declaration.parameters
         defaults = self.declaration.defaults
@@ -111,7 +115,7 @@ class CodingYokMethod:
             if i < len(arguments):
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
-                default_value = interpreter.evaluate(defaults[i])
+                default_value = interpreter.evaluate(defaults[i])  # type: ignore
                 environment.define(param, default_value)
             else:
                 raise CodingYokRuntimeError(f"Parameter '{param}' tidak memiliki nilai")
@@ -179,12 +183,10 @@ class CodingYokZeroDivisionException(CodingYokException):
 # Exception handling utilities
 def create_builtin_exceptions() -> Dict[str, CodingYokClass]:
     """Create built-in exception classes"""
-    exceptions = {}
-    
-    # Base Exception class
-    base_exception = CodingYokClass("Exception", None, {
-        "__init__": CodingYokMethod(None, None)  # Will be properly implemented
-    })
+    exceptions: Dict[str, CodingYokClass] = {}
+
+    # Base Exception class (simplified for now)
+    base_exception = CodingYokClass("Exception", None, {})
     exceptions["Exception"] = base_exception
     
     # Specific exception types

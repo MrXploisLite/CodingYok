@@ -142,9 +142,19 @@ class AssignmentStatement(Statement):
     """Variable assignment"""
     target: str
     value: Expression
-    
+
     def accept(self, visitor):
         return visitor.visit_assignment(self)
+
+
+@dataclass
+class AttributeAssignmentStatement(Statement):
+    """Attribute assignment (obj.attr = value)"""
+    target: AttributeExpression
+    value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_attribute_assignment(self)
 
 
 @dataclass

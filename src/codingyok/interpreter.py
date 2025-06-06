@@ -152,6 +152,24 @@ class CodingYokInterpreter:
         """Visit assignment statement"""
         value = self.evaluate(stmt.value)
         self.environment.define(stmt.target, value)
+
+    def visit_attribute_assignment(self, stmt) -> None:
+        """Visit attribute assignment statement"""
+        from .ast_nodes import AttributeAssignmentStatement
+        stmt: AttributeAssignmentStatement
+
+        obj = self.evaluate(stmt.target.object)
+        value = self.evaluate(stmt.value)
+
+        if isinstance(obj, CodingYokInstance):
+            obj.set(stmt.target.attribute, value)
+        else:
+            # Try to set attribute on Python object
+            try:
+                setattr(obj, stmt.target.attribute, value)
+            except AttributeError:
+                obj_type = type(obj).__name__
+                raise CodingYokAttributeError(obj_type, stmt.target.attribute)
     
     def visit_if(self, stmt: IfStatement) -> None:
         """Visit if statement"""
