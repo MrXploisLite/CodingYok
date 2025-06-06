@@ -284,6 +284,7 @@ class CodingYokParser:
             TokenType.GREATER_EQUAL,
             TokenType.LESS_THAN,
             TokenType.LESS_EQUAL,
+            TokenType.DALAM,
         ):
             operator = self.previous().value
             right = self.term()
@@ -406,12 +407,24 @@ class CodingYokParser:
         """Parse list literal"""
         elements = []
 
+        # Skip newlines after opening bracket
+        self.skip_newlines()
+
         if not self.check(TokenType.RIGHT_BRACKET):
             elements.append(self.expression())
 
             while self.match(TokenType.COMMA):
+                # Skip newlines after comma
+                self.skip_newlines()
+
+                # Check if we've reached the end of the list
+                if self.check(TokenType.RIGHT_BRACKET):
+                    break
+
                 elements.append(self.expression())
 
+        # Skip newlines before closing bracket
+        self.skip_newlines()
         self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah elemen list")
 
         return ListExpression(elements)
@@ -420,6 +433,9 @@ class CodingYokParser:
         """Parse dictionary literal"""
         pairs = []
 
+        # Skip newlines after opening brace
+        self.skip_newlines()
+
         if not self.check(TokenType.RIGHT_BRACE):
             key = self.expression()
             self.consume(TokenType.COLON, "Diharapkan ':' setelah kunci dictionary")
@@ -427,11 +443,20 @@ class CodingYokParser:
             pairs.append((key, value))
 
             while self.match(TokenType.COMMA):
+                # Skip newlines after comma
+                self.skip_newlines()
+
+                # Check if we've reached the end of the dictionary
+                if self.check(TokenType.RIGHT_BRACE):
+                    break
+
                 key = self.expression()
                 self.consume(TokenType.COLON, "Diharapkan ':' setelah kunci dictionary")
                 value = self.expression()
                 pairs.append((key, value))
 
+        # Skip newlines before closing brace
+        self.skip_newlines()
         self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}' setelah dictionary")
 
         return DictExpression(pairs)

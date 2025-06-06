@@ -17,6 +17,7 @@ class CodingYokLexer:
         self.column = 1
         self.tokens: List[Token] = []
         self.indent_stack = [0]  # Stack to track indentation levels
+        self.bracket_depth = 0  # Track nested brackets/braces/parens
 
     def error(self, message: str) -> None:
         """Raise a syntax error with current position"""
@@ -279,8 +280,10 @@ class CodingYokLexer:
                 # If line is not empty or comment-only
                 char = self.peek()
                 if char and char not in "\n#":
-                    indent_tokens = self.handle_indentation(line_start_pos)
-                    self.tokens.extend(indent_tokens)
+                    # Only handle indentation when not inside expressions
+                    if self.bracket_depth == 0:
+                        indent_tokens = self.handle_indentation(line_start_pos)
+                        self.tokens.extend(indent_tokens)
 
                 line_start = False
 
@@ -376,6 +379,12 @@ class CodingYokLexer:
                 continue
 
             if char in DELIMITERS:
+                # Track bracket depth for indentation handling
+                if char in "([{":
+                    self.bracket_depth += 1
+                elif char in ")]}":
+                    self.bracket_depth = max(0, self.bracket_depth - 1)
+
                 self.tokens.append(
                     Token(DELIMITERS[char], char, self.line, self.column)
                 )

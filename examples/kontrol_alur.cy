@@ -23,26 +23,26 @@ kalau_tidak:
     grade = "E"
     keterangan = "Gagal"
 
-tulis(str(nilai)
-tulis(str(keterangan)
+tulis(str(nilai))
+tulis(str(keterangan))
 
 # Contoh FOR loop
 tulis("\n2. PERULANGAN FOR")
 tulis("Menghitung dari 1 sampai 5:")
 untuk i dalam rentang(1, 6):
-    tulis(str(i)
+    tulis(str(i))
 
 tulis("\nMenampilkan buah-buahan:")
 buah_buahan = ["apel", "jeruk", "mangga", "pisang"]
 untuk buah dalam buah_buahan:
-    tulis(str(huruf_besar(buah))
+    tulis(str(huruf_besar(buah)))
 
 # Contoh WHILE loop
 tulis("\n3. PERULANGAN WHILE")
 tulis("Countdown dari 5:")
 countdown = 5
 selama countdown > 0:
-    tulis(str(countdown)
+    tulis(str(countdown))
     countdown -= 1
 tulis("  Selesai!")
 
@@ -54,7 +54,7 @@ untuk i dalam rentang(1, 4):
     untuk j dalam rentang(1, 4):
         hasil = i * j
         baris += f"{hasil:2} "
-    tulis(str(baris)
+    tulis(str(baris))
 
 # Contoh dengan break dan continue
 tulis("\n5. BREAK DAN CONTINUE")
@@ -64,7 +64,7 @@ untuk angka dalam rentang(1, 11):
     jika angka % 2 != 0:
         lanjut  # Skip angka ganjil
     
-    tulis(str(angka)
+    tulis(str(angka))
     ditemukan += 1
     
     jika ditemukan >= 3:
@@ -97,8 +97,8 @@ untuk angka dalam angka_asli:
         angka_genap.append(angka)
     angka_kuadrat.append(angka * angka)
 
-tulis(str(angka_asli)
-tulis(str(angka_genap)
-tulis(str(angka_kuadrat)
+tulis(str(angka_asli))
+tulis(str(angka_genap))
+tulis(str(angka_kuadrat))
 
 tulis("\n=== SELESAI ===")

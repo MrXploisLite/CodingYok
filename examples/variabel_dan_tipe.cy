@@ -18,7 +18,10 @@ tulis("=== PROFIL PENGGUNA ===")
 tulis("Nama:", nama)
 tulis("Umur:", umur, "tahun")
 tulis("Tinggi:", tinggi, "cm")
-status = "Menikah" jika sudah_menikah kalau_tidak "Belum Menikah"
+jika sudah_menikah:
+    status = "Menikah"
+kalau_tidak:
+    status = "Belum Menikah"
 tulis("Status:", status)
 
 # Menampilkan tipe data
@@ -49,5 +52,5 @@ tulis("Hobi setelah ditambah:", hobi)
 
 # Bekerja dengan dictionary
 tulis("=== PROFIL LENGKAP ===")
-untuk kunci, nilai dalam profil.items():
-    tulis(kunci + ":", nilai)
+untuk item dalam profil.items():
+    tulis(item[0] + ":", item[1])

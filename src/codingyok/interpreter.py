@@ -335,6 +335,10 @@ class CodingYokInterpreter:
         elif operator == ">=":
             return left >= right
 
+        # Membership operator
+        elif operator == "dalam":
+            return left in right
+
         # Logical operators
         elif operator == "dan":
             return self.is_truthy(left) and self.is_truthy(right)
