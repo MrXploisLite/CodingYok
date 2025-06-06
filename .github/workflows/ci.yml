@@ -14,10 +14,10 @@ jobs:
         python-version: [3.8, 3.9, "3.10", "3.11"]
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     
@@ -55,8 +55,9 @@ jobs:
         python -m codingyok.cli examples/fungsi.cy
     
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      uses: codecov/codecov-action@v4
       with:
+        token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
         flags: unittests
         name: codecov-umbrella
@@ -67,10 +68,10 @@ jobs:
     if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.10"
     
@@ -88,7 +89,7 @@ jobs:
         twine check dist/*
     
     - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: dist
         path: dist/
@@ -99,36 +100,37 @@ jobs:
     if: github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release]')
     
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     
     - name: Download build artifacts
-      uses: actions/download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
         name: dist
         path: dist/
     
     - name: Create Release
       id: create_release
-      uses: actions/create-release@v1
+      uses: softprops/action-gh-release@v2
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: v${{ github.run_number }}
-        release_name: CodingYok v${{ github.run_number }}
+        name: CodingYok v${{ github.run_number }}
         body: |
           🎉 New release of CodingYok!
-          
+
           ## What's New
           - Check the commit messages for details
-          
+
           ## Installation
           ```bash
           pip install codingyok
           ```
-          
+
           ## Quick Start
           ```bash
           codingyok examples/hello_world.cy
           ```
         draft: false
         prerelease: false
+        files: dist/*
