@@ -17,16 +17,19 @@ from . import __version__
 def run_file(file_path: str) -> None:
     """Run a CodingYok file"""
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             source_code = file.read()
-        
+
         run_code(source_code, file_path)
-        
+
     except FileNotFoundError:
         print(f"Error: File '{file_path}' tidak ditemukan.", file=sys.stderr)
         sys.exit(1)
     except UnicodeDecodeError:
-        print(f"Error: File '{file_path}' tidak dapat dibaca sebagai UTF-8.", file=sys.stderr)
+        print(
+            f"Error: File '{file_path}' tidak dapat dibaca sebagai UTF-8.",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
 
@@ -36,15 +39,15 @@ def run_code(source_code: str, filename: str = "<stdin>") -> None:
         # Tokenize
         lexer = CodingYokLexer(source_code)
         tokens = lexer.tokenize()
-        
+
         # Parse
         parser = CodingYokParser(tokens)
         ast = parser.parse()
-        
+
         # Interpret
         interpreter = CodingYokInterpreter()
         interpreter.interpret(ast)
-        
+
     except CodingYokError as error:
         source_lines = source_code.splitlines()
         traceback = format_traceback(error, source_lines)
@@ -60,37 +63,37 @@ def run_repl() -> None:
     print(f"CodingYok v{__version__} - Bahasa Pemrograman Indonesia")
     print("Ketik 'keluar()' atau tekan Ctrl+C untuk keluar.")
     print("=" * 50)
-    
+
     interpreter = CodingYokInterpreter()
-    
+
     while True:
         try:
             # Get input
             line = input(">>> ")
-            
+
             # Check for exit commands
-            if line.strip() in ['keluar()', 'exit()', 'quit()']:
+            if line.strip() in ["keluar()", "exit()", "quit()"]:
                 print("Sampai jumpa!")
                 break
-            
+
             if not line.strip():
                 continue
-            
+
             # Execute line
             try:
                 lexer = CodingYokLexer(line)
                 tokens = lexer.tokenize()
-                
+
                 parser = CodingYokParser(tokens)
                 ast = parser.parse()
-                
+
                 interpreter.interpret(ast)
-                
+
             except CodingYokError as error:
                 source_lines = [line]
                 traceback = format_traceback(error, source_lines)
                 print(traceback)
-            
+
         except KeyboardInterrupt:
             print("\nSampai jumpa!")
             break
@@ -146,56 +149,44 @@ CONTOH KODE:
 def main() -> None:
     """Main entry point"""
     parser = argparse.ArgumentParser(
-        prog='codingyok',
-        description='CodingYok - Bahasa Pemrograman Indonesia',
-        add_help=False  # We'll handle help ourselves
+        prog="codingyok",
+        description="CodingYok - Bahasa Pemrograman Indonesia",
+        add_help=False,  # We'll handle help ourselves
     )
-    
+
+    parser.add_argument("file", nargs="?", help="File CodingYok (.cy) untuk dijalankan")
+
     parser.add_argument(
-        'file',
-        nargs='?',
-        help='File CodingYok (.cy) untuk dijalankan'
+        "--version", "-v", action="store_true", help="Tampilkan informasi versi"
     )
-    
+
+    parser.add_argument("--help", "-h", action="store_true", help="Tampilkan bantuan")
+
     parser.add_argument(
-        '--version', '-v',
-        action='store_true',
-        help='Tampilkan informasi versi'
+        "--debug", action="store_true", help="Mode debug (tampilkan token dan AST)"
     )
-    
-    parser.add_argument(
-        '--help', '-h',
-        action='store_true',
-        help='Tampilkan bantuan'
-    )
-    
-    parser.add_argument(
-        '--debug',
-        action='store_true',
-        help='Mode debug (tampilkan token dan AST)'
-    )
-    
+
     args = parser.parse_args()
-    
+
     # Handle special flags
     if args.version:
         show_version()
         return
-    
+
     if args.help:
         show_help()
         return
-    
+
     # Run file or REPL
     if args.file:
         # Validate file extension
-        if not args.file.endswith('.cy'):
+        if not args.file.endswith(".cy"):
             print("Warning: File tidak memiliki ekstensi .cy", file=sys.stderr)
-        
+
         run_file(args.file)
     else:
         run_repl()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

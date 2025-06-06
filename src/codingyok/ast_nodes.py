@@ -9,11 +9,11 @@ from dataclasses import dataclass
 
 class ASTNode(ABC):
     """Base class for all AST nodes"""
-    
+
     def __init__(self, line: int = 0, column: int = 0):
         self.line = line
         self.column = column
-    
+
     @abstractmethod
     def accept(self, visitor):
         """Accept a visitor (Visitor pattern)"""
@@ -23,14 +23,16 @@ class ASTNode(ABC):
 # Expressions
 class Expression(ASTNode):
     """Base class for all expressions"""
+
     pass
 
 
 @dataclass
 class LiteralExpression(Expression):
     """Literal values (numbers, strings, booleans, None)"""
+
     value: Any
-    
+
     def accept(self, visitor):
         return visitor.visit_literal(self)
 
@@ -38,8 +40,9 @@ class LiteralExpression(Expression):
 @dataclass
 class IdentifierExpression(Expression):
     """Variable or function names"""
+
     name: str
-    
+
     def accept(self, visitor):
         return visitor.visit_identifier(self)
 
@@ -47,10 +50,11 @@ class IdentifierExpression(Expression):
 @dataclass
 class BinaryExpression(Expression):
     """Binary operations (a + b, a == b, etc.)"""
+
     left: Expression
     operator: str
     right: Expression
-    
+
     def accept(self, visitor):
         return visitor.visit_binary(self)
 
@@ -58,9 +62,10 @@ class BinaryExpression(Expression):
 @dataclass
 class UnaryExpression(Expression):
     """Unary operations (-a, bukan a, etc.)"""
+
     operator: str
     operand: Expression
-    
+
     def accept(self, visitor):
         return visitor.visit_unary(self)
 
@@ -68,9 +73,10 @@ class UnaryExpression(Expression):
 @dataclass
 class CallExpression(Expression):
     """Function calls"""
+
     callee: Expression
     arguments: List[Expression]
-    
+
     def accept(self, visitor):
         return visitor.visit_call(self)
 
@@ -78,9 +84,10 @@ class CallExpression(Expression):
 @dataclass
 class AttributeExpression(Expression):
     """Attribute access (obj.attr)"""
+
     object: Expression
     attribute: str
-    
+
     def accept(self, visitor):
         return visitor.visit_attribute(self)
 
@@ -88,9 +95,10 @@ class AttributeExpression(Expression):
 @dataclass
 class IndexExpression(Expression):
     """Index access (arr[0], dict['key'])"""
+
     object: Expression
     index: Expression
-    
+
     def accept(self, visitor):
         return visitor.visit_index(self)
 
@@ -98,8 +106,9 @@ class IndexExpression(Expression):
 @dataclass
 class ListExpression(Expression):
     """List literals [1, 2, 3]"""
+
     elements: List[Expression]
-    
+
     def accept(self, visitor):
         return visitor.visit_list(self)
 
@@ -107,8 +116,9 @@ class ListExpression(Expression):
 @dataclass
 class DictExpression(Expression):
     """Dictionary literals {'a': 1, 'b': 2}"""
+
     pairs: List[tuple[Expression, Expression]]
-    
+
     def accept(self, visitor):
         return visitor.visit_dict(self)
 
@@ -116,14 +126,16 @@ class DictExpression(Expression):
 # Statements
 class Statement(ASTNode):
     """Base class for all statements"""
+
     pass
 
 
 @dataclass
 class ExpressionStatement(Statement):
     """Expression used as statement"""
+
     expression: Expression
-    
+
     def accept(self, visitor):
         return visitor.visit_expression_statement(self)
 
@@ -131,8 +143,9 @@ class ExpressionStatement(Statement):
 @dataclass
 class PrintStatement(Statement):
     """tulis statement"""
+
     expressions: List[Expression]
-    
+
     def accept(self, visitor):
         return visitor.visit_print(self)
 
@@ -140,6 +153,7 @@ class PrintStatement(Statement):
 @dataclass
 class AssignmentStatement(Statement):
     """Variable assignment"""
+
     target: str
     value: Expression
 
@@ -150,6 +164,7 @@ class AssignmentStatement(Statement):
 @dataclass
 class AttributeAssignmentStatement(Statement):
     """Attribute assignment (obj.attr = value)"""
+
     target: AttributeExpression
     value: Expression
 
@@ -160,11 +175,12 @@ class AttributeAssignmentStatement(Statement):
 @dataclass
 class IfStatement(Statement):
     """jika statement"""
+
     condition: Expression
     then_branch: List[Statement]
     elif_branches: List[tuple[Expression, List[Statement]]]
     else_branch: Optional[List[Statement]]
-    
+
     def accept(self, visitor):
         return visitor.visit_if(self)
 
@@ -172,9 +188,10 @@ class IfStatement(Statement):
 @dataclass
 class WhileStatement(Statement):
     """selama statement"""
+
     condition: Expression
     body: List[Statement]
-    
+
     def accept(self, visitor):
         return visitor.visit_while(self)
 
@@ -182,10 +199,11 @@ class WhileStatement(Statement):
 @dataclass
 class ForStatement(Statement):
     """untuk statement"""
+
     variable: str
     iterable: Expression
     body: List[Statement]
-    
+
     def accept(self, visitor):
         return visitor.visit_for(self)
 
@@ -193,11 +211,12 @@ class ForStatement(Statement):
 @dataclass
 class FunctionDefinition(Statement):
     """fungsi definition"""
+
     name: str
     parameters: List[str]
     body: List[Statement]
     defaults: List[Optional[Expression]]
-    
+
     def accept(self, visitor):
         return visitor.visit_function_def(self)
 
@@ -205,8 +224,9 @@ class FunctionDefinition(Statement):
 @dataclass
 class ReturnStatement(Statement):
     """kembalikan statement"""
+
     value: Optional[Expression]
-    
+
     def accept(self, visitor):
         return visitor.visit_return(self)
 
@@ -214,7 +234,7 @@ class ReturnStatement(Statement):
 @dataclass
 class BreakStatement(Statement):
     """berhenti statement"""
-    
+
     def accept(self, visitor):
         return visitor.visit_break(self)
 
@@ -222,7 +242,7 @@ class BreakStatement(Statement):
 @dataclass
 class ContinueStatement(Statement):
     """lanjut statement"""
-    
+
     def accept(self, visitor):
         return visitor.visit_continue(self)
 
@@ -230,7 +250,7 @@ class ContinueStatement(Statement):
 @dataclass
 class PassStatement(Statement):
     """lewati statement"""
-    
+
     def accept(self, visitor):
         return visitor.visit_pass(self)
 
@@ -238,9 +258,10 @@ class PassStatement(Statement):
 @dataclass
 class ImportStatement(Statement):
     """impor statement"""
+
     module_name: str
     alias: Optional[str]
-    
+
     def accept(self, visitor):
         return visitor.visit_import(self)
 
@@ -248,10 +269,11 @@ class ImportStatement(Statement):
 @dataclass
 class FromImportStatement(Statement):
     """dari ... impor statement"""
+
     module_name: str
     names: List[str]
     aliases: List[Optional[str]]
-    
+
     def accept(self, visitor):
         return visitor.visit_from_import(self)
 
@@ -259,6 +281,7 @@ class FromImportStatement(Statement):
 @dataclass
 class ClassDefinition(Statement):
     """kelas definition"""
+
     name: str
     superclass: Optional[str]
     methods: List[FunctionDefinition]
@@ -270,8 +293,9 @@ class ClassDefinition(Statement):
 @dataclass
 class TryStatement(Statement):
     """coba statement"""
+
     try_block: List[Statement]
-    except_clauses: List['ExceptClause']
+    except_clauses: List["ExceptClause"]
     finally_block: Optional[List[Statement]]
 
     def accept(self, visitor):
@@ -281,6 +305,7 @@ class TryStatement(Statement):
 @dataclass
 class ExceptClause:
     """kecuali clause"""
+
     exception_type: Optional[str]
     exception_name: Optional[str]
     body: List[Statement]
@@ -289,6 +314,7 @@ class ExceptClause:
 @dataclass
 class RaiseStatement(Statement):
     """lempar statement"""
+
     exception: Optional[Expression]
 
     def accept(self, visitor):
@@ -298,6 +324,7 @@ class RaiseStatement(Statement):
 @dataclass
 class WithStatement(Statement):
     """dengan statement"""
+
     context_expr: Expression
     target: Optional[str]
     body: List[Statement]
@@ -309,7 +336,8 @@ class WithStatement(Statement):
 @dataclass
 class Program(ASTNode):
     """Root node representing entire program"""
+
     statements: List[Statement]
-    
+
     def accept(self, visitor):
         return visitor.visit_program(self)

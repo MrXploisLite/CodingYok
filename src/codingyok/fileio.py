@@ -12,20 +12,24 @@ from typing import Any, Dict, List, Optional, Union
 from .errors import CodingYokRuntimeError, CodingYokValueError
 
 
-def baca_file(nama_file: str, encoding: str = 'utf-8') -> str:
+def baca_file(nama_file: str, encoding: str = "utf-8") -> str:
     """Read file content (Indonesian: read file)"""
     try:
-        with open(nama_file, 'r', encoding=encoding) as file:
+        with open(nama_file, "r", encoding=encoding) as file:
             return file.read()
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File '{nama_file}' tidak ditemukan")
     except UnicodeDecodeError:
-        raise CodingYokRuntimeError(f"File '{nama_file}' tidak dapat dibaca dengan encoding {encoding}")
+        raise CodingYokRuntimeError(
+            f"File '{nama_file}' tidak dapat dibaca dengan encoding {encoding}"
+        )
     except Exception as e:
         raise CodingYokRuntimeError(f"Error membaca file '{nama_file}': {str(e)}")
 
 
-def tulis_file(nama_file: str, konten: str, encoding: str = 'utf-8', mode: str = 'w') -> None:
+def tulis_file(
+    nama_file: str, konten: str, encoding: str = "utf-8", mode: str = "w"
+) -> None:
     """Write content to file (Indonesian: write file)"""
     try:
         with open(nama_file, mode, encoding=encoding) as file:
@@ -34,30 +38,32 @@ def tulis_file(nama_file: str, konten: str, encoding: str = 'utf-8', mode: str =
         raise CodingYokRuntimeError(f"Error menulis file '{nama_file}': {str(e)}")
 
 
-def tambah_ke_file(nama_file: str, konten: str, encoding: str = 'utf-8') -> None:
+def tambah_ke_file(nama_file: str, konten: str, encoding: str = "utf-8") -> None:
     """Append content to file (Indonesian: add to file)"""
-    tulis_file(nama_file, konten, encoding, 'a')
+    tulis_file(nama_file, konten, encoding, "a")
 
 
-def baca_baris(nama_file: str, encoding: str = 'utf-8') -> List[str]:
+def baca_baris(nama_file: str, encoding: str = "utf-8") -> List[str]:
     """Read file lines as list (Indonesian: read lines)"""
     try:
-        with open(nama_file, 'r', encoding=encoding) as file:
-            return [line.rstrip('\n\r') for line in file.readlines()]
+        with open(nama_file, "r", encoding=encoding) as file:
+            return [line.rstrip("\n\r") for line in file.readlines()]
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File '{nama_file}' tidak ditemukan")
     except Exception as e:
         raise CodingYokRuntimeError(f"Error membaca baris file '{nama_file}': {str(e)}")
 
 
-def tulis_baris(nama_file: str, baris_list: List[str], encoding: str = 'utf-8') -> None:
+def tulis_baris(nama_file: str, baris_list: List[str], encoding: str = "utf-8") -> None:
     """Write list of lines to file (Indonesian: write lines)"""
     try:
-        with open(nama_file, 'w', encoding=encoding) as file:
+        with open(nama_file, "w", encoding=encoding) as file:
             for baris in baris_list:
-                file.write(str(baris) + '\n')
+                file.write(str(baris) + "\n")
     except Exception as e:
-        raise CodingYokRuntimeError(f"Error menulis baris ke file '{nama_file}': {str(e)}")
+        raise CodingYokRuntimeError(
+            f"Error menulis baris ke file '{nama_file}': {str(e)}"
+        )
 
 
 def ada_file(nama_file: str) -> bool:
@@ -79,6 +85,7 @@ def salin_file(sumber: str, tujuan: str) -> None:
     """Copy file (Indonesian: copy file)"""
     try:
         import shutil
+
         shutil.copy2(sumber, tujuan)
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File sumber '{sumber}' tidak ditemukan")
@@ -90,6 +97,7 @@ def pindah_file(sumber: str, tujuan: str) -> None:
     """Move/rename file (Indonesian: move file)"""
     try:
         import shutil
+
         shutil.move(sumber, tujuan)
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File sumber '{sumber}' tidak ditemukan")
@@ -112,12 +120,12 @@ def info_file(nama_file: str) -> Dict[str, Any]:
     try:
         stat = os.stat(nama_file)
         return {
-            'ukuran': stat.st_size,
-            'dibuat': stat.st_ctime,
-            'dimodifikasi': stat.st_mtime,
-            'diakses': stat.st_atime,
-            'adalah_file': os.path.isfile(nama_file),
-            'adalah_direktori': os.path.isdir(nama_file),
+            "ukuran": stat.st_size,
+            "dibuat": stat.st_ctime,
+            "dimodifikasi": stat.st_mtime,
+            "diakses": stat.st_atime,
+            "adalah_file": os.path.isfile(nama_file),
+            "adalah_direktori": os.path.isdir(nama_file),
         }
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File '{nama_file}' tidak ditemukan")
@@ -138,6 +146,7 @@ def hapus_direktori(nama_dir: str) -> None:
     """Remove directory (Indonesian: delete directory)"""
     try:
         import shutil
+
         shutil.rmtree(nama_dir)
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"Direktori '{nama_dir}' tidak ditemukan")
@@ -145,20 +154,28 @@ def hapus_direktori(nama_dir: str) -> None:
         raise CodingYokRuntimeError(f"Error menghapus direktori '{nama_dir}': {str(e)}")
 
 
-def daftar_file(direktori: str = '.') -> List[str]:
+def daftar_file(direktori: str = ".") -> List[str]:
     """List files in directory (Indonesian: list files)"""
     try:
-        return [f for f in os.listdir(direktori) if os.path.isfile(os.path.join(direktori, f))]
+        return [
+            f
+            for f in os.listdir(direktori)
+            if os.path.isfile(os.path.join(direktori, f))
+        ]
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"Direktori '{direktori}' tidak ditemukan")
     except Exception as e:
         raise CodingYokRuntimeError(f"Error membaca direktori '{direktori}': {str(e)}")
 
 
-def daftar_direktori(direktori: str = '.') -> List[str]:
+def daftar_direktori(direktori: str = ".") -> List[str]:
     """List directories (Indonesian: list directories)"""
     try:
-        return [d for d in os.listdir(direktori) if os.path.isdir(os.path.join(direktori, d))]
+        return [
+            d
+            for d in os.listdir(direktori)
+            if os.path.isdir(os.path.join(direktori, d))
+        ]
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"Direktori '{direktori}' tidak ditemukan")
     except Exception as e:
@@ -169,7 +186,7 @@ def daftar_direktori(direktori: str = '.') -> List[str]:
 def baca_json(nama_file: str) -> Any:
     """Read JSON file (Indonesian: read JSON)"""
     try:
-        with open(nama_file, 'r', encoding='utf-8') as file:
+        with open(nama_file, "r", encoding="utf-8") as file:
             return json.load(file)
     except FileNotFoundError:
         raise CodingYokRuntimeError(f"File JSON '{nama_file}' tidak ditemukan")
@@ -182,17 +199,17 @@ def baca_json(nama_file: str) -> Any:
 def tulis_json(nama_file: str, data: Any, indent: int = 2) -> None:
     """Write data to JSON file (Indonesian: write JSON)"""
     try:
-        with open(nama_file, 'w', encoding='utf-8') as file:
+        with open(nama_file, "w", encoding="utf-8") as file:
             json.dump(data, file, indent=indent, ensure_ascii=False)
     except Exception as e:
         raise CodingYokRuntimeError(f"Error menulis JSON: {str(e)}")
 
 
 # CSV operations
-def baca_csv(nama_file: str, delimiter: str = ',') -> List[List[str]]:
+def baca_csv(nama_file: str, delimiter: str = ",") -> List[List[str]]:
     """Read CSV file (Indonesian: read CSV)"""
     try:
-        with open(nama_file, 'r', encoding='utf-8', newline='') as file:
+        with open(nama_file, "r", encoding="utf-8", newline="") as file:
             reader = csv.reader(file, delimiter=delimiter)
             return list(reader)
     except FileNotFoundError:
@@ -201,10 +218,10 @@ def baca_csv(nama_file: str, delimiter: str = ',') -> List[List[str]]:
         raise CodingYokRuntimeError(f"Error membaca CSV: {str(e)}")
 
 
-def tulis_csv(nama_file: str, data: List[List[Any]], delimiter: str = ',') -> None:
+def tulis_csv(nama_file: str, data: List[List[Any]], delimiter: str = ",") -> None:
     """Write data to CSV file (Indonesian: write CSV)"""
     try:
-        with open(nama_file, 'w', encoding='utf-8', newline='') as file:
+        with open(nama_file, "w", encoding="utf-8", newline="") as file:
             writer = csv.writer(file, delimiter=delimiter)
             writer.writerows(data)
     except Exception as e:
@@ -246,13 +263,13 @@ def pisah_pola(pola: str, teks: str) -> List[str]:
 
 def validasi_email(email: str) -> bool:
     """Validate email format"""
-    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    pattern = r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
     return bool(re.match(pattern, email))
 
 
 def validasi_url(url: str) -> bool:
     """Validate URL format"""
-    pattern = r'^https?://(?:[-\w.])+(?:\:[0-9]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$'
+    pattern = r"^https?://(?:[-\w.])+(?:\:[0-9]+)?(?:/(?:[\w/_.])*(?:\?(?:[\w&=%.])*)?(?:\#(?:[\w.])*)?)?$"
     return bool(re.match(pattern, url))
 
 
@@ -260,38 +277,33 @@ def get_fileio_functions() -> Dict[str, callable]:
     """Get all file I/O and utility functions"""
     return {
         # File operations
-        'baca_file': baca_file,
-        'tulis_file': tulis_file,
-        'tambah_ke_file': tambah_ke_file,
-        'baca_baris': baca_baris,
-        'tulis_baris': tulis_baris,
-        'ada_file': ada_file,
-        'hapus_file': hapus_file,
-        'salin_file': salin_file,
-        'pindah_file': pindah_file,
-        'ukuran_file': ukuran_file,
-        'info_file': info_file,
-        
+        "baca_file": baca_file,
+        "tulis_file": tulis_file,
+        "tambah_ke_file": tambah_ke_file,
+        "baca_baris": baca_baris,
+        "tulis_baris": tulis_baris,
+        "ada_file": ada_file,
+        "hapus_file": hapus_file,
+        "salin_file": salin_file,
+        "pindah_file": pindah_file,
+        "ukuran_file": ukuran_file,
+        "info_file": info_file,
         # Directory operations
-        'buat_direktori': buat_direktori,
-        'hapus_direktori': hapus_direktori,
-        'daftar_file': daftar_file,
-        'daftar_direktori': daftar_direktori,
-        
+        "buat_direktori": buat_direktori,
+        "hapus_direktori": hapus_direktori,
+        "daftar_file": daftar_file,
+        "daftar_direktori": daftar_direktori,
         # JSON operations
-        'baca_json': baca_json,
-        'tulis_json': tulis_json,
-        
+        "baca_json": baca_json,
+        "tulis_json": tulis_json,
         # CSV operations
-        'baca_csv': baca_csv,
-        'tulis_csv': tulis_csv,
-        
+        "baca_csv": baca_csv,
+        "tulis_csv": tulis_csv,
         # Pattern matching
-        'cari_pola': cari_pola,
-        'ganti_pola': ganti_pola,
-        'pisah_pola': pisah_pola,
-        
+        "cari_pola": cari_pola,
+        "ganti_pola": ganti_pola,
+        "pisah_pola": pisah_pola,
         # Validation
-        'validasi_email': validasi_email,
-        'validasi_url': validasi_url,
+        "validasi_email": validasi_email,
+        "validasi_url": validasi_url,
     }

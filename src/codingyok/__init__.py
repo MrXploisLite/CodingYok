@@ -16,7 +16,7 @@ from .errors import CodingYokError, CodingYokSyntaxError, CodingYokRuntimeError
 
 __all__ = [
     "CodingYokInterpreter",
-    "CodingYokLexer", 
+    "CodingYokLexer",
     "CodingYokParser",
     "CodingYokError",
     "CodingYokSyntaxError",

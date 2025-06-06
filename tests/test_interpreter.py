@@ -4,7 +4,8 @@ Unit tests for CodingYok interpreter
 
 import sys
 import os
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
+
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
 import pytest
 from io import StringIO
@@ -15,11 +16,11 @@ from codingyok.errors import CodingYokRuntimeError
 
 
 class TestCodingYokInterpreter:
-    
+
     def setup_method(self):
         """Setup for each test"""
         self.interpreter = CodingYokInterpreter()
-    
+
     def run_code(self, source_code):
         """Helper to run CodingYok code"""
         lexer = CodingYokLexer(source_code)
@@ -27,28 +28,28 @@ class TestCodingYokInterpreter:
         parser = CodingYokParser(tokens)
         ast = parser.parse()
         self.interpreter.interpret(ast)
-    
+
     def capture_output(self, source_code):
         """Helper to capture print output"""
         old_stdout = sys.stdout
         sys.stdout = captured_output = StringIO()
-        
+
         try:
             self.run_code(source_code)
             return captured_output.getvalue().strip()
         finally:
             sys.stdout = old_stdout
-    
+
     def test_basic_print(self):
         """Test basic print functionality"""
         output = self.capture_output('tulis("Hello World")')
         assert output == "Hello World"
-    
+
     def test_print_multiple_args(self):
         """Test print with multiple arguments"""
         output = self.capture_output('tulis("Hello", "World", 123)')
         assert output == "Hello World 123"
-    
+
     def test_variables(self):
         """Test variable assignment and access"""
         code = """
@@ -58,7 +59,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "Budi 25"
-    
+
     def test_arithmetic_operations(self):
         """Test arithmetic operations"""
         test_cases = [
@@ -70,11 +71,11 @@ class TestCodingYokInterpreter:
             ("tulis(17 % 3)", "2"),
             ("tulis(2 ** 3)", "8"),
         ]
-        
+
         for code, expected in test_cases:
             output = self.capture_output(code)
             assert output == expected
-    
+
     def test_comparison_operations(self):
         """Test comparison operations"""
         test_cases = [
@@ -86,11 +87,11 @@ class TestCodingYokInterpreter:
             ("tulis(3 <= 5)", "benar"),
             ("tulis(5 == 3)", "salah"),
         ]
-        
+
         for code, expected in test_cases:
             output = self.capture_output(code)
             assert output == expected
-    
+
     def test_logical_operations(self):
         """Test logical operations"""
         test_cases = [
@@ -101,11 +102,11 @@ class TestCodingYokInterpreter:
             ("tulis(bukan benar)", "salah"),
             ("tulis(bukan salah)", "benar"),
         ]
-        
+
         for code, expected in test_cases:
             output = self.capture_output(code)
             assert output == expected
-    
+
     def test_if_statement(self):
         """Test if statements"""
         code = """
@@ -117,7 +118,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "Baik"
-    
+
     def test_elif_statement(self):
         """Test elif statements"""
         code = """
@@ -133,7 +134,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "C"
-    
+
     def test_while_loop(self):
         """Test while loops"""
         code = """
@@ -144,7 +145,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "1\n2\n3"
-    
+
     def test_for_loop(self):
         """Test for loops"""
         code = """
@@ -153,7 +154,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "1\n2\n3"
-    
+
     def test_for_loop_with_list(self):
         """Test for loops with lists"""
         code = """
@@ -163,7 +164,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "apel\njeruk\nmangga"
-    
+
     def test_function_definition_and_call(self):
         """Test function definition and calling"""
         code = """
@@ -174,7 +175,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "Halo Budi"
-    
+
     def test_function_with_return(self):
         """Test function with return value"""
         code = """
@@ -186,7 +187,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "8"
-    
+
     def test_function_with_default_parameters(self):
         """Test function with default parameters"""
         code = """
@@ -198,7 +199,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "Budi 20\nSiti 25"
-    
+
     def test_list_operations(self):
         """Test list operations"""
         code = """
@@ -208,7 +209,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "1\n3"
-    
+
     def test_dict_operations(self):
         """Test dictionary operations"""
         code = """
@@ -218,22 +219,22 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "Budi\n25"
-    
+
     def test_builtin_functions(self):
         """Test built-in functions"""
         test_cases = [
             ('tulis(panjang("hello"))', "5"),
-            ('tulis(tipe(123))', "bilangan_bulat"),
+            ("tulis(tipe(123))", "bilangan_bulat"),
             ('tulis(tipe("text"))', "teks"),
-            ('tulis(maksimum([1, 5, 3]))', "5"),
-            ('tulis(minimum([1, 5, 3]))', "1"),
-            ('tulis(jumlah([1, 2, 3]))', "6"),
+            ("tulis(maksimum([1, 5, 3]))", "5"),
+            ("tulis(minimum([1, 5, 3]))", "1"),
+            ("tulis(jumlah([1, 2, 3]))", "6"),
         ]
-        
+
         for code, expected in test_cases:
             output = self.capture_output(code)
             assert output == expected
-    
+
     def test_string_operations(self):
         """Test string operations"""
         code = """
@@ -243,17 +244,17 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "HELLO WORLD\nhello world"
-    
+
     def test_error_handling(self):
         """Test error handling"""
         # Division by zero
         with pytest.raises(Exception):  # Should raise CodingYokZeroDivisionError
             self.run_code("tulis(5 / 0)")
-        
+
         # Undefined variable
         with pytest.raises(Exception):  # Should raise CodingYokNameError
             self.run_code("tulis(undefined_variable)")
-    
+
     def test_nested_scopes(self):
         """Test nested function scopes"""
         code = """
@@ -271,7 +272,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "30"
-    
+
     def test_recursion(self):
         """Test recursive functions"""
         code = """
@@ -285,7 +286,7 @@ class TestCodingYokInterpreter:
         """
         output = self.capture_output(code)
         assert output == "120"
-    
+
     def test_break_continue(self):
         """Test break and continue statements"""
         code = """

@@ -23,12 +23,12 @@ def tipe(obj: Any) -> str:
     """Return type of object (type in Python)"""
     type_map = {
         int: "bilangan_bulat",
-        float: "bilangan_desimal", 
+        float: "bilangan_desimal",
         str: "teks",
         list: "daftar",
         dict: "kamus",
         bool: "boolean",
-        type(None): "kosong"
+        type(None): "kosong",
     }
     return type_map.get(type(obj), str(type(obj).__name__))
 
@@ -55,7 +55,9 @@ def int_indo(value: Any) -> int:
     try:
         return int(value)
     except (ValueError, TypeError):
-        raise CodingYokValueError(f"Tidak dapat mengkonversi '{value}' ke bilangan bulat")
+        raise CodingYokValueError(
+            f"Tidak dapat mengkonversi '{value}' ke bilangan bulat"
+        )
 
 
 def float_indo(value: Any) -> float:
@@ -63,7 +65,9 @@ def float_indo(value: Any) -> float:
     try:
         return float(value)
     except (ValueError, TypeError):
-        raise CodingYokValueError(f"Tidak dapat mengkonversi '{value}' ke bilangan desimal")
+        raise CodingYokValueError(
+            f"Tidak dapat mengkonversi '{value}' ke bilangan desimal"
+        )
 
 
 def str_indo(value: Any) -> str:
@@ -213,18 +217,26 @@ def tanggal_sekarang() -> str:
     """Current date in Indonesian format"""
     now = datetime.datetime.now()
     bulan_indo = [
-        "Januari", "Februari", "Maret", "April", "Mei", "Juni",
-        "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+        "Januari",
+        "Februari",
+        "Maret",
+        "April",
+        "Mei",
+        "Juni",
+        "Juli",
+        "Agustus",
+        "September",
+        "Oktober",
+        "November",
+        "Desember",
     ]
-    hari_indo = [
-        "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"
-    ]
-    
+    hari_indo = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]
+
     hari = hari_indo[now.weekday()]
     tanggal = now.day
     bulan = bulan_indo[now.month - 1]
     tahun = now.year
-    
+
     return f"{hari}, {tanggal} {bulan} {tahun}"
 
 
@@ -324,7 +336,13 @@ def cetak_tabel(data: List[List[Any]], header: Optional[List[str]] = None) -> No
     # Print header if provided
     if header:
         header_row = all_rows[0]
-        print("| " + " | ".join(cell.ljust(width) for cell, width in zip(header_row, col_widths)) + " |")
+        print(
+            "| "
+            + " | ".join(
+                cell.ljust(width) for cell, width in zip(header_row, col_widths)
+            )
+            + " |"
+        )
         print("|" + "|".join("-" * (width + 2) for width in col_widths) + "|")
         data_start = 1
     else:
@@ -332,7 +350,11 @@ def cetak_tabel(data: List[List[Any]], header: Optional[List[str]] = None) -> No
 
     # Print data rows
     for row in all_rows[data_start:]:
-        print("| " + " | ".join(cell.ljust(width) for cell, width in zip(row, col_widths)) + " |")
+        print(
+            "| "
+            + " | ".join(cell.ljust(width) for cell, width in zip(row, col_widths))
+            + " |"
+        )
 
 
 def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
@@ -346,24 +368,24 @@ def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
 
     # Calculate variance and standard deviation
     variance = sum((x - rata_rata) ** 2 for x in data) / n
-    std_dev = variance ** 0.5
+    std_dev = variance**0.5
 
     # Calculate median
     sorted_data = sorted(data)
     if n % 2 == 0:
-        median = (sorted_data[n//2 - 1] + sorted_data[n//2]) / 2
+        median = (sorted_data[n // 2 - 1] + sorted_data[n // 2]) / 2
     else:
-        median = sorted_data[n//2]
+        median = sorted_data[n // 2]
 
     return {
-        'jumlah': total,
-        'rata_rata': rata_rata,
-        'median': median,
-        'minimum': min(data),
-        'maksimum': max(data),
-        'varians': variance,
-        'standar_deviasi': std_dev,
-        'jumlah_data': n
+        "jumlah": total,
+        "rata_rata": rata_rata,
+        "median": median,
+        "minimum": min(data),
+        "maksimum": max(data),
+        "varians": variance,
+        "standar_deviasi": std_dev,
+        "jumlah_data": n,
     }
 
 
@@ -371,55 +393,48 @@ def get_builtin_functions() -> Dict[str, Callable]:
     """Get all built-in functions"""
     return {
         # Basic functions
-        'panjang': panjang,
-        'tipe': tipe,
-        'rentang': rentang,
-        'masukan': masukan,
-
+        "panjang": panjang,
+        "tipe": tipe,
+        "rentang": rentang,
+        "masukan": masukan,
         # Type conversion
-        'int': int_indo,
-        'float': float_indo,
-        'str': str_indo,
-        'daftar': daftar,
-        'kamus': kamus,
-
+        "int": int_indo,
+        "float": float_indo,
+        "str": str_indo,
+        "daftar": daftar,
+        "kamus": kamus,
         # Math functions
-        'jumlah': jumlah,
-        'maksimum': maksimum,
-        'minimum': minimum,
-        'urutkan': urutkan,
-        'balik': balik,
-        'abs': abs_indo,
-        'bulat': bulat,
-        'akar': akar,
-        'pangkat': pangkat,
-        'sin': sin_indo,
-        'cos': cos_indo,
-        'tan': tan_indo,
-
+        "jumlah": jumlah,
+        "maksimum": maksimum,
+        "minimum": minimum,
+        "urutkan": urutkan,
+        "balik": balik,
+        "abs": abs_indo,
+        "bulat": bulat,
+        "akar": akar,
+        "pangkat": pangkat,
+        "sin": sin_indo,
+        "cos": cos_indo,
+        "tan": tan_indo,
         # Time functions
-        'waktu_sekarang': waktu_sekarang,
-        'tidur': tidur,
-        'tanggal_sekarang': tanggal_sekarang,
-
+        "waktu_sekarang": waktu_sekarang,
+        "tidur": tidur,
+        "tanggal_sekarang": tanggal_sekarang,
         # Random functions
-        'acak': acak,
-        'acak_int': acak_int,
-        'pilih_acak': pilih_acak,
-        'acak_urutan': acak_urutan,
-
+        "acak": acak,
+        "acak_int": acak_int,
+        "pilih_acak": pilih_acak,
+        "acak_urutan": acak_urutan,
         # String functions
-        'huruf_besar': huruf_besar,
-        'huruf_kecil': huruf_kecil,
-        'pisah': pisah,
-        'gabung': gabung,
-        'ganti': ganti,
-
+        "huruf_besar": huruf_besar,
+        "huruf_kecil": huruf_kecil,
+        "pisah": pisah,
+        "gabung": gabung,
+        "ganti": ganti,
         # Advanced utilities
-        'cetak_tabel': cetak_tabel,
-        'hitung_statistik': hitung_statistik,
-
+        "cetak_tabel": cetak_tabel,
+        "hitung_statistik": hitung_statistik,
         # Constants
-        'PI': math.pi,
-        'E': math.e,
+        "PI": math.pi,
+        "E": math.e,
     }
