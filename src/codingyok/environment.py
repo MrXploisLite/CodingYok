@@ -2,8 +2,8 @@
 Environment for variable scope management in CodingYok
 """
 
-from typing import Any, Dict, Optional
-from .errors import CodingYokNameError
+from typing import Any, Dict, Optional, List
+from .errors import CodingYokNameError, get_close_matches
 
 
 class Environment:
@@ -25,7 +25,9 @@ class Environment:
         if self.enclosing is not None:
             return self.enclosing.get(name)
 
-        raise CodingYokNameError(name)
+        available_names = self._get_all_names()
+        suggestions = get_close_matches(name, available_names)
+        raise CodingYokNameError(name, suggestions=suggestions)
 
     def assign(self, name: str, value: Any) -> None:
         """Assign to an existing variable"""
@@ -37,7 +39,9 @@ class Environment:
             self.enclosing.assign(name, value)
             return
 
-        raise CodingYokNameError(name)
+        available_names = self._get_all_names()
+        suggestions = get_close_matches(name, available_names)
+        raise CodingYokNameError(name, suggestions=suggestions)
 
     def get_at(self, distance: int, name: str) -> Any:
         """Get variable at specific distance in scope chain"""
@@ -56,6 +60,13 @@ class Environment:
             else:
                 raise RuntimeError(f"Cannot access ancestor at distance {distance}")
         return environment
+
+    def _get_all_names(self) -> List[str]:
+        """Get all available variable names in scope chain"""
+        names = list(self.values.keys())
+        if self.enclosing is not None:
+            names.extend(self.enclosing._get_all_names())
+        return names
 
     def __str__(self) -> str:
         """String representation for debugging"""

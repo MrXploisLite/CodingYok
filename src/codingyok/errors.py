@@ -3,7 +3,8 @@ Error handling for CodingYok language
 Provides Indonesian error messages
 """
 
-from typing import Optional, Any
+from typing import Optional, Any, List
+import difflib
 
 
 class CodingYokError(Exception):
@@ -49,9 +50,16 @@ class CodingYokNameError(CodingYokRuntimeError):
     """Name not found error"""
 
     def __init__(
-        self, name: str, line: Optional[int] = None, column: Optional[int] = None
+        self,
+        name: str,
+        line: Optional[int] = None,
+        column: Optional[int] = None,
+        suggestions: Optional[List[str]] = None,
     ):
-        super().__init__(f"Nama '{name}' tidak ditemukan", line, column)
+        message = f"Nama '{name}' tidak ditemukan"
+        if suggestions:
+            message += f"\n   Mungkin maksud Anda: {', '.join(suggestions)}"
+        super().__init__(message, line, column)
 
 
 class CodingYokTypeError(CodingYokRuntimeError):
@@ -177,3 +185,10 @@ def format_traceback(error: CodingYokError, source_lines: Optional[list] = None)
     lines.append("=" * 50)
 
     return "\n".join(lines)
+
+
+def get_close_matches(
+    name: str, available_names: List[str], n: int = 3, cutoff: float = 0.6
+) -> List[str]:
+    """Get close matches for a name using fuzzy matching"""
+    return difflib.get_close_matches(name, available_names, n=n, cutoff=cutoff)

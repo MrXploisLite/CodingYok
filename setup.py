@@ -23,17 +23,17 @@ def read_requirements():
 
 setup(
     name="codingyok",
-    version="1.0.0",
+    version="2.0.0",
     author="MrXploisLite",
     author_email="108934584+MrXploisLite@users.noreply.github.com",
-    description="Bahasa pemrograman modern dengan keyword bahasa Indonesia",
+    description="Bahasa pemrograman modern dengan keyword bahasa Indonesia - Now with Comprehensions, Generators, and Pattern Matching!",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/MrXploisLite/CodingYok",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",

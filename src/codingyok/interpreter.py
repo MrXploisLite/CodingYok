@@ -26,9 +26,31 @@ class CodingYokFunction:
     def __init__(self, declaration: FunctionDefinition, closure: Environment):
         self.declaration = declaration
         self.closure = closure
+        self.is_generator = self._check_if_generator()
+
+    def _check_if_generator(self) -> bool:
+        """Check if function contains yield statements"""
+        from .ast_nodes import YieldStatement
+
+        def has_yield(statements):
+            for stmt in statements:
+                if isinstance(stmt, YieldStatement):
+                    return True
+                for attr_name in dir(stmt):
+                    if not attr_name.startswith("_"):
+                        attr = getattr(stmt, attr_name)
+                        if isinstance(attr, list):
+                            if has_yield(attr):
+                                return True
+            return False
+
+        return has_yield(self.declaration.body)
 
     def call(self, interpreter, arguments: List[Any]) -> Any:
         """Call the function with given arguments"""
+        if self.is_generator:
+            return self._create_generator(interpreter, arguments)
+
         # Create new environment for function execution
         environment = Environment(self.closure)
 
@@ -61,12 +83,48 @@ class CodingYokFunction:
         finally:
             interpreter.environment = previous
 
+    def _create_generator(self, interpreter, arguments: List[Any]):
+        """Create a generator object"""
+        environment = Environment(self.closure)
+        params = self.declaration.parameters
+        defaults = self.declaration.defaults
+
+        for i, param in enumerate(params):
+            if i < len(arguments):
+                environment.define(param, arguments[i])
+            elif i < len(defaults) and defaults[i] is not None:
+                default_value = interpreter.evaluate(defaults[i])
+                environment.define(param, default_value)
+            else:
+                raise CodingYokRuntimeError(f"Parameter '{param}' tidak memiliki nilai")
+
+        def generator():
+            previous = interpreter.environment
+            interpreter.environment = environment
+            try:
+                for statement in self.declaration.body:
+                    try:
+                        interpreter.execute(statement)
+                    except YieldValue as yv:
+                        yield yv.value
+            finally:
+                interpreter.environment = previous
+
+        return generator()
+
     def __str__(self) -> str:
         return f"<fungsi {self.declaration.name}>"
 
 
 class ReturnValue(Exception):
     """Exception used for return statements"""
+
+    def __init__(self, value: Any):
+        self.value = value
+
+
+class YieldValue(Exception):
+    """Exception used for yield statements"""
 
     def __init__(self, value: Any):
         self.value = value
@@ -257,6 +315,46 @@ class CodingYokInterpreter:
         """Visit pass statement"""
         pass  # Do nothing
 
+    def visit_yield(self, stmt: YieldStatement) -> None:
+        """Visit yield statement"""
+        value = None
+        if stmt.value:
+            value = self.evaluate(stmt.value)
+        raise YieldValue(value)
+
+    def visit_match(self, stmt: MatchStatement) -> None:
+        """Visit match statement (pattern matching)"""
+        match_value = self.evaluate(stmt.value)
+
+        for case in stmt.cases:
+            if self._match_pattern(match_value, case.pattern):
+                if case.guard is None or self.is_truthy(self.evaluate(case.guard)):
+                    for statement in case.body:
+                        self.execute(statement)
+                    return
+
+        raise CodingYokRuntimeError(
+            f"Tidak ada pola yang cocok untuk nilai: {match_value}"
+        )
+
+    def _match_pattern(self, value: Any, pattern: Any) -> bool:
+        """Check if value matches pattern"""
+        if isinstance(pattern, IdentifierExpression):
+            if pattern.name == "_":
+                return True
+            return True
+
+        pattern_value = self.evaluate(pattern)
+
+        if isinstance(pattern_value, list):
+            if not isinstance(value, list):
+                return False
+            if len(pattern_value) != len(value):
+                return False
+            return all(self._match_pattern(v, p) for v, p in zip(value, pattern_value))
+
+        return value == pattern_value
+
     def visit_import(self, stmt: ImportStatement) -> None:
         """Visit import statement"""
         # TODO: Implement module system
@@ -435,6 +533,90 @@ class CodingYokInterpreter:
                 # Evaluate the expression and convert to string
                 value = self.evaluate(part)
                 result += self.stringify(value)
+        return result
+
+    def visit_list_comprehension(self, expr: ListComprehension) -> List[Any]:
+        """Visit list comprehension"""
+        result = []
+        iterable = self.evaluate(expr.iterable)
+
+        if not hasattr(iterable, "__iter__"):
+            raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
+
+        env = Environment(self.environment)
+        prev_env = self.environment
+        self.environment = env
+
+        try:
+            for item in iterable:
+                self.environment.define(expr.variable, item)
+
+                if expr.condition is None or self.is_truthy(
+                    self.evaluate(expr.condition)
+                ):
+                    result.append(self.evaluate(expr.element))
+        finally:
+            self.environment = prev_env
+
+        return result
+
+    def visit_dict_comprehension(self, expr: DictComprehension) -> Dict[Any, Any]:
+        """Visit dict comprehension"""
+        result = {}
+        iterable = self.evaluate(expr.iterable)
+
+        if not hasattr(iterable, "__iter__"):
+            raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
+
+        env = Environment(self.environment)
+        prev_env = self.environment
+        self.environment = env
+
+        try:
+            for item in iterable:
+                self.environment.define(expr.variable, item)
+
+                if expr.condition is None or self.is_truthy(
+                    self.evaluate(expr.condition)
+                ):
+                    key = self.evaluate(expr.key)
+                    value = self.evaluate(expr.value)
+                    result[key] = value
+        finally:
+            self.environment = prev_env
+
+        return result
+
+    def visit_set(self, expr: SetExpression) -> set:
+        """Visit set expression"""
+        elements = []
+        for element in expr.elements:
+            elements.append(self.evaluate(element))
+        return set(elements)
+
+    def visit_set_comprehension(self, expr: SetComprehension) -> set:
+        """Visit set comprehension"""
+        result = set()
+        iterable = self.evaluate(expr.iterable)
+
+        if not hasattr(iterable, "__iter__"):
+            raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
+
+        env = Environment(self.environment)
+        prev_env = self.environment
+        self.environment = env
+
+        try:
+            for item in iterable:
+                self.environment.define(expr.variable, item)
+
+                if expr.condition is None or self.is_truthy(
+                    self.evaluate(expr.condition)
+                ):
+                    result.add(self.evaluate(expr.element))
+        finally:
+            self.environment = prev_env
+
         return result
 
     # Helper methods

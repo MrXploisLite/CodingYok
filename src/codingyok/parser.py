@@ -121,6 +121,9 @@ class CodingYokParser:
             if self.match(TokenType.KEMBALIKAN):
                 return self.return_statement()
 
+            if self.match(TokenType.HASILKAN):
+                return self.yield_statement()
+
             if self.match(TokenType.BERHENTI):
                 return BreakStatement()
 
@@ -129,6 +132,10 @@ class CodingYokParser:
 
             if self.match(TokenType.LEWATI):
                 return PassStatement()
+
+            # Pattern matching
+            if self.match(TokenType.COCOKKAN):
+                return self.match_statement()
 
             # Exception handling
             if self.match(TokenType.COBA):
@@ -403,63 +410,119 @@ class CodingYokParser:
         # This line should never be reached due to error() raising an exception
         raise RuntimeError("Unreachable code")
 
-    def list_expression(self) -> ListExpression:
-        """Parse list literal"""
-        elements = []
-
+    def list_expression(self) -> Expression:
+        """Parse list literal or list comprehension"""
         # Skip newlines after opening bracket
         self.skip_newlines()
 
-        if not self.check(TokenType.RIGHT_BRACKET):
+        if self.check(TokenType.RIGHT_BRACKET):
+            self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']'")
+            return ListExpression([])
+
+        first_element = self.expression()
+
+        if self.match(TokenType.UNTUK):
+            variable = self.consume(
+                TokenType.IDENTIFIER, "Diharapkan nama variabel"
+            ).value
+            self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
+            iterable = self.expression()
+
+            condition = None
+            if self.match(TokenType.JIKA):
+                condition = self.expression()
+
+            self.skip_newlines()
+            self.consume(
+                TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah comprehension"
+            )
+            return ListComprehension(first_element, variable, iterable, condition)
+
+        elements = [first_element]
+        while self.match(TokenType.COMMA):
+            self.skip_newlines()
+            if self.check(TokenType.RIGHT_BRACKET):
+                break
             elements.append(self.expression())
 
-            while self.match(TokenType.COMMA):
-                # Skip newlines after comma
-                self.skip_newlines()
-
-                # Check if we've reached the end of the list
-                if self.check(TokenType.RIGHT_BRACKET):
-                    break
-
-                elements.append(self.expression())
-
-        # Skip newlines before closing bracket
         self.skip_newlines()
         self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah elemen list")
 
         return ListExpression(elements)
 
-    def dict_expression(self) -> DictExpression:
-        """Parse dictionary literal"""
-        pairs = []
-
-        # Skip newlines after opening brace
+    def dict_expression(self) -> Expression:
+        """Parse dictionary literal, dict comprehension, or set"""
         self.skip_newlines()
 
-        if not self.check(TokenType.RIGHT_BRACE):
-            key = self.expression()
-            self.consume(TokenType.COLON, "Diharapkan ':' setelah kunci dictionary")
+        if self.check(TokenType.RIGHT_BRACE):
+            self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}'")
+            return DictExpression([])
+
+        first_key = self.expression()
+
+        if self.match(TokenType.COLON):
             value = self.expression()
-            pairs.append((key, value))
 
-            while self.match(TokenType.COMMA):
-                # Skip newlines after comma
+            if self.match(TokenType.UNTUK):
+                variable = self.consume(
+                    TokenType.IDENTIFIER, "Diharapkan nama variabel"
+                ).value
+                self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
+                iterable = self.expression()
+
+                condition = None
+                if self.match(TokenType.JIKA):
+                    condition = self.expression()
+
                 self.skip_newlines()
+                self.consume(
+                    TokenType.RIGHT_BRACE, "Diharapkan '}' setelah dict comprehension"
+                )
+                return DictComprehension(
+                    first_key, value, variable, iterable, condition
+                )
 
-                # Check if we've reached the end of the dictionary
+            pairs = [(first_key, value)]
+            while self.match(TokenType.COMMA):
+                self.skip_newlines()
                 if self.check(TokenType.RIGHT_BRACE):
                     break
-
                 key = self.expression()
                 self.consume(TokenType.COLON, "Diharapkan ':' setelah kunci dictionary")
-                value = self.expression()
-                pairs.append((key, value))
+                val = self.expression()
+                pairs.append((key, val))
 
-        # Skip newlines before closing brace
+            self.skip_newlines()
+            self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}' setelah dictionary")
+            return DictExpression(pairs)
+
+        if self.match(TokenType.UNTUK):
+            variable = self.consume(
+                TokenType.IDENTIFIER, "Diharapkan nama variabel"
+            ).value
+            self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
+            iterable = self.expression()
+
+            condition = None
+            if self.match(TokenType.JIKA):
+                condition = self.expression()
+
+            self.skip_newlines()
+            self.consume(
+                TokenType.RIGHT_BRACE, "Diharapkan '}' setelah set comprehension"
+            )
+            return SetComprehension(first_key, variable, iterable, condition)
+
+        elements = [first_key]
+        while self.match(TokenType.COMMA):
+            self.skip_newlines()
+            if self.check(TokenType.RIGHT_BRACE):
+                break
+            elements.append(self.expression())
+
         self.skip_newlines()
-        self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}' setelah dictionary")
-
-        return DictExpression(pairs)
+        self.consume(TokenType.RIGHT_BRACE, "Diharapkan '}' setelah set")
+        return SetExpression(elements)
 
     def parse_fstring(self, parts: List[str]) -> FStringExpression:
         """Parse f-string parts into expressions"""
@@ -621,6 +684,50 @@ class CodingYokParser:
             value = self.expression()
 
         return ReturnStatement(value)
+
+    def yield_statement(self) -> YieldStatement:
+        """Parse yield statement (for generators)"""
+        value = None
+
+        if not self.check(TokenType.NEWLINE) and not self.is_at_end():
+            value = self.expression()
+
+        return YieldStatement(value)
+
+    def match_statement(self) -> MatchStatement:
+        """Parse match statement (pattern matching)"""
+        value = self.expression()
+        self.consume(TokenType.COLON, "Diharapkan ':' setelah ekspresi cocokkan")
+
+        cases = []
+
+        self.skip_newlines()
+        self.consume(TokenType.INDENT, "Diharapkan indentasi setelah cocokkan")
+
+        while not self.check(TokenType.DEDENT) and not self.is_at_end():
+            if self.check(TokenType.NEWLINE):
+                self.advance()
+                continue
+
+            if self.match(TokenType.KASUS):
+                pattern = self.expression()
+
+                guard = None
+                if self.match(TokenType.JIKA):
+                    guard = self.expression()
+
+                self.consume(TokenType.COLON, "Diharapkan ':' setelah pola kasus")
+                body = self.block()
+
+                cases.append(MatchCase(pattern, guard, body))
+            else:
+                self.error("Diharapkan 'kasus' dalam blok cocokkan")
+
+            self.skip_newlines()
+
+        self.consume(TokenType.DEDENT, "Diharapkan dedent setelah blok cocokkan")
+
+        return MatchStatement(value, cases)
 
     def import_statement(self) -> ImportStatement:
         """Parse import statement"""
