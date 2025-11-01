@@ -5,6 +5,50 @@ All notable changes to CodingYok will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+#### **Module System** 📚
+- **Full module system implementation**: Import and organize code into reusable modules
+  ```codingyok
+  impor matematika
+  dari utilitas impor huruf_besar
+  impor helper sebagai h
+  ```
+
+- **Module search paths**: 
+  - Current working directory
+  - Script directory
+  - Standard library modules directory
+
+- **Module caching**: Modules are only loaded and executed once for performance
+
+- **Standard library modules**:
+  - `matematika` - Mathematical functions and constants (PI, E, tambah, kurang, kali, bagi, pangkat, akar_kuadrat, faktorial, absolut)
+  - `utilitas` - String and text utilities (balik_string, huruf_besar, huruf_kecil, jumlah_kata, dll)
+
+- **Import styles**:
+  - Basic import: `impor module_name`
+  - Import with alias: `impor module_name sebagai alias`
+  - Selective import: `dari module_name impor name1, name2`
+  - Selective with alias: `dari module_name impor name sebagai alias`
+
+- **Custom user modules**: Create your own `.cy` modules and import them
+
+- **Module documentation**: Added comprehensive MODULE_SYSTEM.md guide
+
+### Enhanced
+
+- Interpreter now accepts `script_dir` parameter for module resolution
+- CLI automatically passes script directory to interpreter
+
+### Examples
+
+- Added `examples/test_modules.cy` - Module system test suite
+- Added `examples/test_custom_module.cy` - Custom module examples
+- Added `examples/helper.cy` - Example custom module
+
 ## [2.0.0] - 2024-11-01
 
 ### 🎉 Major Release - Modern Language Features

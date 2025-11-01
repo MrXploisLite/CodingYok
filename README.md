@@ -13,6 +13,7 @@
 - 🎯 **Pattern Matching `cocokkan/kasus`** - Pattern matching ala Python 3.10+
 - 💡 **Error Messages yang Lebih Baik** - Saran "mungkin maksud Anda" untuk typo
 - 📦 **Set Data Type** - Dukungan penuh untuk tipe data set
+- 📚 **Module System** - Sistem modul dengan `impor` dan `dari...impor` untuk mengorganisir kode
 
 ## ✨ Fitur Utama
 
@@ -199,6 +200,40 @@ fungsi sapa(bahasa):
             tulis("Hi!")
 
 sapa("indonesia")  # Output: Halo!
+```
+
+### Module System (NEW in v2.0!)
+```codingyok
+# Import entire module
+impor matematika
+hasil = matematika.tambah(5, 3)
+tulis(hasil)  # Output: 8
+tulis(matematika.PI)  # Output: 3.141592653589793
+
+# Import with alias
+impor utilitas sebagai util
+teks_besar = util.huruf_besar("hello")
+tulis(teks_besar)  # Output: HELLO
+
+# Import specific names
+dari matematika impor kurang, kali, PI
+tulis(kurang(10, 4))  # Output: 6
+tulis(kali(6, 7))     # Output: 42
+tulis(PI)             # Output: 3.141592653589793
+
+# Import with alias
+dari utilitas impor balik_string sebagai reverse
+tulis(reverse("CodingYok"))  # Output: koYgnidoC
+
+# Create your own modules
+# file: helper.cy
+fungsi sapa(nama):
+    kembalikan f"Halo, {nama}!"
+
+# file: main.cy
+impor helper
+pesan = helper.sapa("Budi")
+tulis(pesan)  # Output: Halo, Budi!
 ```
 
 ### Fitur Indonesia
