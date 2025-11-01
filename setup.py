@@ -23,10 +23,10 @@ def read_requirements():
 
 setup(
     name="codingyok",
-    version="2.0.0",
+    version="3.0.0",
     author="MrXploisLite",
     author_email="108934584+MrXploisLite@users.noreply.github.com",
-    description="Bahasa pemrograman modern dengan keyword bahasa Indonesia - Now with Comprehensions, Generators, and Pattern Matching!",
+    description="Bahasa pemrograman modern dengan keyword bahasa Indonesia - Now with Lambda, Exception Handling, and Context Managers!",
     long_description=read_readme(),
     long_description_content_type="text/markdown",
     url="https://github.com/MrXploisLite/CodingYok",

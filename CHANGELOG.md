@@ -7,6 +7,115 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.0.0] - 2024-11-01
+
+### 🎉 Major Release - Advanced Language Features
+
+This is a major release that brings CodingYok to advanced feature parity with modern Python, adding critical language features for professional development.
+
+### Added
+
+#### **Lambda Expressions** 🎯
+- **Anonymous functions**: Create inline functions without naming them
+  ```codingyok
+  tambah = lambda x, y: x + y
+  hasil = tambah(5, 3)  # 8
+  
+  # Use with higher-order functions
+  angka = [1, 2, 3, 4, 5]
+  kuadrat = peta(lambda x: x * x, angka)
+  ```
+
+- **Closure support**: Lambdas capture variables from enclosing scope
+- **First-class functions**: Pass lambdas as arguments, return from functions
+- **Functional programming**: Enable map, filter, reduce patterns
+
+#### **Exception Handling** 🛡️
+- **`coba/kecuali/akhirnya` Implementation**: Full try-except-finally support
+  ```codingyok
+  coba:
+      nilai = int("tidak valid")
+  kecuali ValueError sebagai e:
+      tulis("Error konversi:", e)
+  akhirnya:
+      tulis("Pembersihan selesai")
+  ```
+
+- **`lempar` (raise) Statement**: Throw custom exceptions
+  ```codingyok
+  fungsi validasi_umur(umur):
+      jika umur < 0:
+          lempar ValueError("Umur tidak boleh negatif")
+      kembalikan benar
+  ```
+
+- **Exception types**: Support for built-in and custom exception classes
+- **Exception chaining**: Proper exception propagation through call stack
+- **Finally blocks**: Guaranteed cleanup code execution
+
+#### **Context Managers** 🔐
+- **`dengan` (with) Statement**: Automatic resource management
+  ```codingyok
+  dengan buka_file("data.txt") sebagai f:
+      isi = f.baca()
+      tulis(isi)
+  # File automatically closed
+  ```
+
+- **Custom context managers**: Create classes with `__enter__` and `__exit__`
+- **Resource safety**: Automatic cleanup even when exceptions occur
+- **Python compatibility**: Works with Python's context manager protocol
+
+### Enhanced
+
+- **Interpreter**: Full exception handling infrastructure
+- **Parser**: Support for lambda expressions
+- **Type system**: Better handling of callable objects
+- **Error messages**: Improved error reporting for new features
+
+### Examples
+
+Added comprehensive examples for all v3.0 features:
+- Lambda expressions for functional programming
+- Exception handling patterns
+- Context manager usage
+- Resource management best practices
+
+### Documentation
+
+- Updated README.md with v3.0 feature showcase
+- Added migration guide from v2.x
+- Comprehensive examples for all new features
+- Best practices documentation
+
+### Technical Details
+
+#### New AST Nodes
+- `LambdaExpression` - Lambda function expressions
+
+#### Enhanced Visitor Methods
+- `visit_lambda` - Lambda expression evaluation
+- `visit_try` - Try-except-finally statement execution
+- `visit_raise` - Exception raising
+- `visit_with` - Context manager support
+
+#### New Interpreter Classes
+- `CodingYokLambda` - Lambda function representation with closure support
+
+### Breaking Changes
+
+None - Full backward compatibility with v2.0 maintained.
+
+### Performance
+
+- Lambda expressions have minimal overhead compared to regular functions
+- Exception handling uses native Python exception mechanism
+- Context managers add negligible performance cost
+
+---
+
+## [2.0.0] - 2024-11-01 (Previous Release)
+
 ### Added
 
 #### **Module System** 📚

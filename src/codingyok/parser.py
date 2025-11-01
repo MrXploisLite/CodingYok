@@ -383,6 +383,9 @@ class CodingYokParser:
 
     def primary(self) -> Expression:
         """Parse primary expression"""
+        if self.match(TokenType.LAMBDA):
+            return self.lambda_expression()
+
         if self.match(TokenType.BENAR, TokenType.SALAH, TokenType.KOSONG):
             return LiteralExpression(self.previous().value)
 
@@ -853,3 +856,24 @@ class CodingYokParser:
         body = self.block()
 
         return WithStatement(context_expr, target, body)
+
+    def lambda_expression(self) -> LambdaExpression:
+        """Parse lambda expression"""
+        parameters = []
+
+        if not self.check(TokenType.COLON):
+            parameters.append(
+                self.consume(TokenType.IDENTIFIER, "Diharapkan nama parameter").value
+            )
+
+            while self.match(TokenType.COMMA):
+                parameters.append(
+                    self.consume(
+                        TokenType.IDENTIFIER, "Diharapkan nama parameter"
+                    ).value
+                )
+
+        self.consume(TokenType.COLON, "Diharapkan ':' setelah parameter lambda")
+        body = self.expression()
+
+        return LambdaExpression(parameters, body)
