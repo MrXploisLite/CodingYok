@@ -102,6 +102,22 @@ def kamus(*args, **kwargs) -> dict:
         raise CodingYokValueError("kamus() membutuhkan maksimal 1 argumen posisi")
 
 
+def peta(fungsi: Callable, iterable: Any) -> map:
+    """Apply function to all items (map in Python)"""
+    try:
+        return map(fungsi, iterable)
+    except TypeError:
+        raise CodingYokTypeError("peta() membutuhkan fungsi dan iterable")
+
+
+def saring(fungsi: Callable, iterable: Any) -> filter:
+    """Filter items based on function (filter in Python)"""
+    try:
+        return filter(fungsi, iterable)
+    except TypeError:
+        raise CodingYokTypeError("saring() membutuhkan fungsi dan iterable")
+
+
 def jumlah(iterable: Any) -> float:
     """Sum of iterable (sum in Python)"""
     try:
@@ -403,6 +419,9 @@ def get_builtin_functions() -> Dict[str, Any]:
         "str": str_indo,
         "daftar": daftar,
         "kamus": kamus,
+        # Functional programming
+        "peta": peta,
+        "saring": saring,
         # Math functions
         "jumlah": jumlah,
         "maksimum": maksimum,

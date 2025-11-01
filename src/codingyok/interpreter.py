@@ -117,6 +117,47 @@ class CodingYokFunction:
         return f"<fungsi {self.declaration.name}>"
 
 
+class CodingYokLambda:
+    """Represents a CodingYok lambda (anonymous function)"""
+
+    def __init__(
+        self,
+        parameters: List[str],
+        body: Expression,
+        closure: Environment,
+        interpreter=None,
+    ):
+        self.parameters = parameters
+        self.body = body
+        self.closure = closure
+        self.interpreter = interpreter
+
+    def call(self, interpreter, arguments: List[Any]) -> Any:
+        """Call the lambda with given arguments"""
+        if len(arguments) != len(self.parameters):
+            raise CodingYokRuntimeError(
+                f"Lambda mengharapkan {len(self.parameters)} argumen, "
+                f"tetapi mendapat {len(arguments)}"
+            )
+
+        environment = Environment(self.closure)
+        for i, param in enumerate(self.parameters):
+            environment.define(param, arguments[i])
+
+        previous = interpreter.environment
+        interpreter.environment = environment
+        try:
+            return interpreter.evaluate(self.body)
+        finally:
+            interpreter.environment = previous
+
+    def __call__(self, *args):
+        """Make lambda callable for Python's map/filter"""
+        if self.interpreter:
+            return self.call(self.interpreter, list(args))
+        raise CodingYokRuntimeError("Lambda tidak memiliki interpreter")
+
+
 class ReturnValue(Exception):
     """Exception used for return statements"""
 
@@ -395,6 +436,179 @@ class CodingYokInterpreter:
         klass = CodingYokClass(stmt.name, superclass, methods)
         self.environment.define(stmt.name, klass)
 
+    def visit_try(self, stmt: TryStatement) -> None:
+        """Visit try statement"""
+        exception_caught = False
+        caught_exception = None
+
+        try:
+            for statement in stmt.try_block:
+                self.execute(statement)
+        except Exception as e:
+            exception_caught = True
+            caught_exception = e
+
+            for except_clause in stmt.except_clauses:
+                if except_clause.exception_type is None:
+                    env = Environment(self.environment)
+                    if except_clause.exception_name:
+                        env.define(except_clause.exception_name, e)
+
+                    prev = self.environment
+                    self.environment = env
+                    try:
+                        for statement in except_clause.body:
+                            self.execute(statement)
+                        exception_caught = True
+                        caught_exception = None
+                        break
+                    finally:
+                        self.environment = prev
+                else:
+                    try:
+                        exception_class = self.environment.get(
+                            except_clause.exception_type
+                        )
+                    except:
+                        exception_class = None
+
+                    # Check if exception matches
+                    matches = False
+                    if exception_class or except_clause.exception_type:
+                        # Check for exception type name matching
+                        if except_clause.exception_type in [
+                            "ValueError",
+                            "TypeError",
+                            "ZeroDivisionError",
+                            "IndexError",
+                            "KeyError",
+                            "AttributeError",
+                        ]:
+                            # Map both Python and CodingYok exceptions
+                            exception_type_map = {
+                                "ValueError": (ValueError, CodingYokValueError),
+                                "TypeError": (TypeError, CodingYokTypeError),
+                                "ZeroDivisionError": (
+                                    ZeroDivisionError,
+                                    CodingYokZeroDivisionError,
+                                ),
+                                "IndexError": (IndexError, CodingYokIndexError),
+                                "KeyError": (KeyError, CodingYokKeyError),
+                                "AttributeError": (
+                                    AttributeError,
+                                    CodingYokAttributeError,
+                                ),
+                            }
+                            exc_types = exception_type_map.get(
+                                except_clause.exception_type, ()
+                            )
+                            if exc_types:
+                                matches = isinstance(e, exc_types)
+                        elif (
+                            exception_class
+                            and isinstance(exception_class, CodingYokClass)
+                            and isinstance(e, CodingYokInstance)
+                        ):
+                            matches = e.klass == exception_class
+                        elif exception_class and isinstance(e, type(exception_class)):
+                            matches = True
+
+                    if matches:
+                        env = Environment(self.environment)
+                        if except_clause.exception_name:
+                            env.define(except_clause.exception_name, e)
+
+                        prev = self.environment
+                        self.environment = env
+                        try:
+                            for statement in except_clause.body:
+                                self.execute(statement)
+                            exception_caught = True
+                            caught_exception = None
+                            break
+                        finally:
+                            self.environment = prev
+        finally:
+            if stmt.finally_block:
+                for statement in stmt.finally_block:
+                    self.execute(statement)
+
+        if caught_exception:
+            raise caught_exception
+
+    def visit_raise(self, stmt: RaiseStatement) -> None:
+        """Visit raise statement"""
+        if stmt.exception:
+            exception = self.evaluate(stmt.exception)
+            if isinstance(exception, str):
+                raise CodingYokRuntimeError(exception)
+            elif isinstance(exception, BaseException):
+                raise exception
+            else:
+                raise CodingYokRuntimeError(
+                    f"Objek yang di-raise harus berupa exception: {exception}"
+                )
+        else:
+            raise CodingYokRuntimeError("lempar statement tanpa exception")
+
+    def visit_with(self, stmt: WithStatement) -> None:
+        """Visit with statement"""
+        context_manager = self.evaluate(stmt.context_expr)
+
+        enter_method = None
+        exit_method = None
+
+        if isinstance(context_manager, CodingYokInstance):
+            try:
+                enter_method = context_manager.get("__enter__")
+                exit_method = context_manager.get("__exit__")
+            except CodingYokAttributeError:
+                if stmt.target:
+                    self.environment.define(stmt.target, context_manager)
+                for statement in stmt.body:
+                    self.execute(statement)
+                return
+        elif hasattr(context_manager, "__enter__") and hasattr(
+            context_manager, "__exit__"
+        ):
+            enter_method = context_manager.__enter__
+            exit_method = context_manager.__exit__
+        else:
+            if stmt.target:
+                self.environment.define(stmt.target, context_manager)
+            for statement in stmt.body:
+                self.execute(statement)
+            return
+
+        context_value = None
+        if enter_method:
+            if hasattr(enter_method, "call"):
+                context_value = enter_method.call(self, [])
+            elif callable(enter_method):
+                context_value = enter_method()
+
+        if stmt.target:
+            self.environment.define(
+                stmt.target,
+                context_value if context_value is not None else context_manager,
+            )
+
+        exception_occurred = None
+        try:
+            for statement in stmt.body:
+                self.execute(statement)
+        except Exception as e:
+            exception_occurred = e
+        finally:
+            if exit_method:
+                if hasattr(exit_method, "call"):
+                    exit_method.call(self, [None, None, None])
+                elif callable(exit_method):
+                    exit_method(None, None, None)
+
+        if exception_occurred:
+            raise exception_occurred
+
     # Visitor methods for expressions
     def visit_literal(self, expr: LiteralExpression) -> Any:
         """Visit literal expression"""
@@ -635,6 +849,10 @@ class CodingYokInterpreter:
             self.environment = prev_env
 
         return result
+
+    def visit_lambda(self, expr: LambdaExpression) -> CodingYokLambda:
+        """Visit lambda expression"""
+        return CodingYokLambda(expr.parameters, expr.body, self.environment, self)
 
     # Helper methods
     def is_truthy(self, value: Any) -> bool:

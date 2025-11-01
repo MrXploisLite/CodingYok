@@ -1,13 +1,22 @@
 # 🇮🇩 CodingYok - Bahasa Pemrograman Indonesia
 
-![CodingYok Logo](https://img.shields.io/badge/CodingYok-v2.0.0-blue)
+![CodingYok Logo](https://img.shields.io/badge/CodingYok-v3.0.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.8+-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 **CodingYok** adalah bahasa pemrograman modern yang dirancang khusus untuk programmer Indonesia. Dengan syntax yang familiar seperti Python namun menggunakan kata kunci bahasa Indonesia, CodingYok membuat coding menjadi lebih mudah dan natural bagi developer Indonesia.
 
-## 🎉 Apa yang Baru di v2.0?
+## 🎉 Apa yang Baru di v3.0?
 
+- 🎯 **Lambda Expressions** - Fungsi anonim untuk pemrograman fungsional
+- 🛡️ **Exception Handling** - `coba/kecuali/akhirnya` untuk penanganan error
+- 🔐 **Context Managers** - `dengan` statement untuk manajemen resource otomatis
+- ⚡ **Enhanced Error Handling** - Try-catch-finally dan custom exceptions
+- 🚀 **Professional Features** - Fitur enterprise-ready untuk development serius
+
+## 📜 Fitur dari Versi Sebelumnya
+
+### v2.0 Features
 - ✨ **List/Dict/Set Comprehensions** - Sintaks modern untuk pembuatan koleksi
 - 🔄 **Generators dengan `hasilkan`** - Fungsi yang menghasilkan nilai secara lazy
 - 🎯 **Pattern Matching `cocokkan/kasus`** - Pattern matching ala Python 3.10+
@@ -200,6 +209,114 @@ fungsi sapa(bahasa):
             tulis("Hi!")
 
 sapa("indonesia")  # Output: Halo!
+```
+
+### Lambda Expressions (NEW in v3.0!)
+```codingyok
+# Lambda sederhana
+tambah = lambda x, y: x + y
+tulis(tambah(5, 3))  # Output: 8
+
+# Lambda dengan satu parameter
+kuadrat = lambda x: x * x
+tulis(kuadrat(4))  # Output: 16
+
+# Lambda dengan built-in functions
+angka = [1, 2, 3, 4, 5]
+hasil = peta(lambda x: x * 2, angka)
+tulis(list(hasil))  # Output: [2, 4, 6, 8, 10]
+
+# Lambda untuk sorting
+data = [{"nama": "Budi", "umur": 25}, {"nama": "Ani", "umur": 20}]
+sorted_data = sorted(data, key=lambda x: x["umur"])
+
+# Lambda dengan closure
+fungsi buat_pengali(n):
+    kembalikan lambda x: x * n
+
+kali_dua = buat_pengali(2)
+kali_tiga = buat_pengali(3)
+tulis(kali_dua(5))   # Output: 10
+tulis(kali_tiga(5))  # Output: 15
+```
+
+### Exception Handling (NEW in v3.0!)
+```codingyok
+# Try-Except sederhana
+coba:
+    angka = int("tidak valid")
+kecuali:
+    tulis("Error: Input tidak valid!")
+
+# Try-Except dengan tipe exception
+coba:
+    hasil = 10 / 0
+kecuali ZeroDivisionError sebagai e:
+    tulis(f"Error pembagian: {e}")
+
+# Multiple except clauses
+coba:
+    nilai = int(input("Masukkan angka: "))
+    hasil = 100 / nilai
+kecuali ValueError:
+    tulis("Input harus berupa angka!")
+kecuali ZeroDivisionError:
+    tulis("Tidak boleh dibagi nol!")
+
+# Try-Except-Finally
+coba:
+    file = buka_file("data.txt")
+    data = file.baca()
+kecuali FileNotFoundError:
+    tulis("File tidak ditemukan!")
+akhirnya:
+    tulis("Proses selesai")  # Selalu dijalankan
+
+# Raise custom exception
+fungsi validasi_umur(umur):
+    jika umur < 0:
+        lempar ValueError("Umur tidak boleh negatif")
+    jika umur > 150:
+        lempar ValueError("Umur tidak wajar")
+    kembalikan benar
+
+coba:
+    validasi_umur(-5)
+kecuali ValueError sebagai e:
+    tulis(f"Error validasi: {e}")
+```
+
+### Context Managers (NEW in v3.0!)
+```codingyok
+# With statement untuk file handling
+dengan buka_file("data.txt", "r") sebagai f:
+    isi = f.baca()
+    tulis(isi)
+# File otomatis ditutup setelah block
+
+# Custom context manager
+kelas DatabaseConnection:
+    fungsi __init__(diri, nama_db):
+        diri.nama_db = nama_db
+    
+    fungsi __enter__(diri):
+        tulis(f"Membuka koneksi ke {diri.nama_db}")
+        kembalikan diri
+    
+    fungsi __exit__(diri, exc_type, exc_val, exc_tb):
+        tulis(f"Menutup koneksi ke {diri.nama_db}")
+        kembalikan salah
+
+# Menggunakan custom context manager
+dengan DatabaseConnection("my_database") sebagai db:
+    tulis("Melakukan operasi database...")
+# Koneksi otomatis ditutup
+
+# Nested context managers
+dengan buka_file("input.txt") sebagai f_in:
+    dengan buka_file("output.txt", "w") sebagai f_out:
+        data = f_in.baca()
+        f_out.tulis(data.upper())
 ```
 
 ### Module System (NEW in v2.0!)

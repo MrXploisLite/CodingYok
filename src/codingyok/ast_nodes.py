@@ -183,6 +183,17 @@ class SetComprehension(Expression):
         return visitor.visit_set_comprehension(self)
 
 
+@dataclass
+class LambdaExpression(Expression):
+    """Lambda expression (anonymous function)"""
+
+    parameters: List[str]
+    body: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_lambda(self)
+
+
 # Statements
 class Statement(ASTNode):
     """Base class for all statements"""
