@@ -18,6 +18,7 @@ from .classes import (
     CodingYokMethod,
     create_builtin_exceptions,
 )
+from .modules import ModuleLoader, ModuleObject
 
 
 class CodingYokFunction:
@@ -145,9 +146,11 @@ class ContinueException(Exception):
 class CodingYokInterpreter:
     """Main interpreter class"""
 
-    def __init__(self):
+    def __init__(self, script_dir=None):
         self.globals = Environment()
         self.environment = self.globals
+        self.global_env = self.globals
+        self.script_dir = script_dir
 
         # Add built-in functions
         builtins = get_builtin_functions()
@@ -173,6 +176,9 @@ class CodingYokInterpreter:
         exceptions = create_builtin_exceptions()
         for name, exc_class in exceptions.items():
             self.globals.define(name, exc_class)
+
+        # Initialize module loader
+        self.module_loader = ModuleLoader(self)
 
     def interpret(self, program: Program) -> None:
         """Interpret a program"""
@@ -357,13 +363,19 @@ class CodingYokInterpreter:
 
     def visit_import(self, stmt: ImportStatement) -> None:
         """Visit import statement"""
-        # TODO: Implement module system
-        raise CodingYokRuntimeError("Sistem modul belum diimplementasikan")
+        try:
+            self.module_loader.import_module(stmt.module_name, stmt.alias)
+        except Exception as e:
+            raise CodingYokRuntimeError(str(e))
 
     def visit_from_import(self, stmt: FromImportStatement) -> None:
         """Visit from import statement"""
-        # TODO: Implement module system
-        raise CodingYokRuntimeError("Sistem modul belum diimplementasikan")
+        try:
+            self.module_loader.import_from_module(
+                stmt.module_name, stmt.names, stmt.aliases
+            )
+        except Exception as e:
+            raise CodingYokRuntimeError(str(e))
 
     def visit_class_def(self, stmt: ClassDefinition) -> None:
         """Visit class definition"""
@@ -482,7 +494,12 @@ class CodingYokInterpreter:
         """Visit attribute expression"""
         obj = self.evaluate(expr.object)
 
-        if isinstance(obj, CodingYokInstance):
+        if isinstance(obj, ModuleObject):
+            try:
+                return obj.get_attribute(expr.attribute)
+            except AttributeError as e:
+                raise CodingYokAttributeError(obj.name, expr.attribute)
+        elif isinstance(obj, CodingYokInstance):
             return obj.get(expr.attribute)
         elif hasattr(obj, expr.attribute):
             return getattr(obj, expr.attribute)

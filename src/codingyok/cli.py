@@ -20,7 +20,9 @@ def run_file(file_path: str) -> None:
         with open(file_path, "r", encoding="utf-8") as file:
             source_code = file.read()
 
-        run_code(source_code, file_path)
+        # Get the directory of the script for module imports
+        script_dir = str(Path(file_path).parent.absolute())
+        run_code(source_code, file_path, script_dir)
 
     except FileNotFoundError:
         print(f"Error: File '{file_path}' tidak ditemukan.", file=sys.stderr)
@@ -33,7 +35,9 @@ def run_file(file_path: str) -> None:
         sys.exit(1)
 
 
-def run_code(source_code: str, filename: str = "<stdin>") -> None:
+def run_code(
+    source_code: str, filename: str = "<stdin>", script_dir: Optional[str] = None
+) -> None:
     """Run CodingYok source code"""
     try:
         # Tokenize
@@ -45,7 +49,7 @@ def run_code(source_code: str, filename: str = "<stdin>") -> None:
         ast = parser.parse()
 
         # Interpret
-        interpreter = CodingYokInterpreter()
+        interpreter = CodingYokInterpreter(script_dir=script_dir)
         interpreter.interpret(ast)
 
     except CodingYokError as error:

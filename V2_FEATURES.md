@@ -17,6 +17,7 @@ CodingYok v2.0 represents a major milestone in the evolution of the Indonesian p
 | Generators (yield) | ❌ | ✅ |
 | Pattern Matching | ❌ | ✅ |
 | Error Suggestions | ❌ | ✅ |
+| Module System | ❌ | ✅ |
 | OOP | ✅ | ✅ |
 | Exceptions | ✅ | ✅ |
 | File I/O | ✅ | ✅ |
@@ -446,6 +447,99 @@ fungsi route_request(method, path):
 
 ---
 
+## 📚 Module System
+
+### Basic Syntax
+
+**Import entire module:**
+```codingyok
+impor module_name
+```
+
+**Import with alias:**
+```codingyok
+impor module_name sebagai alias
+```
+
+**Import specific names:**
+```codingyok
+dari module_name impor name1, name2
+```
+
+**Import with alias (selective):**
+```codingyok
+dari module_name impor name sebagai alias
+```
+
+### Standard Library Modules
+
+**matematika module:**
+```codingyok
+impor matematika
+
+tulis(matematika.PI)                    # 3.141592653589793
+tulis(matematika.tambah(5, 3))          # 8
+tulis(matematika.pangkat(2, 10))        # 1024
+tulis(matematika.akar_kuadrat(144))     # 12.0
+tulis(matematika.faktorial(5))          # 120
+```
+
+**utilitas module:**
+```codingyok
+dari utilitas impor huruf_besar, balik_string
+
+tulis(huruf_besar("hello"))             # HELLO
+tulis(balik_string("CodingYok"))        # koYgnidoC
+```
+
+### Custom Modules
+
+**Create a module (file: helper.cy):**
+```codingyok
+fungsi sapa(nama):
+    kembalikan f"Halo, {nama}!"
+
+fungsi hitung_luas_persegi(sisi):
+    kembalikan sisi * sisi
+
+kelas Kalkulator:
+    fungsi __init__(diri):
+        diri.hasil = 0
+    
+    fungsi tambah(diri, nilai):
+        diri.hasil = diri.hasil + nilai
+        kembalikan diri.hasil
+
+VERSI = "1.0.0"
+```
+
+**Use the module (file: main.cy):**
+```codingyok
+impor helper
+
+pesan = helper.sapa("Budi")
+tulis(pesan)
+
+luas = helper.hitung_luas_persegi(5)
+tulis(f"Luas: {luas}")
+
+calc = helper.Kalkulator()
+calc.tambah(10)
+tulis(f"Hasil: {calc.hasil}")
+```
+
+### Module Features
+
+- ✅ **Module caching**: Modules are loaded once and cached
+- ✅ **Multiple import styles**: Choose the style that fits your needs
+- ✅ **Standard library**: Built-in matematika and utilitas modules
+- ✅ **Custom modules**: Create your own reusable code
+- ✅ **Smart search paths**: Current dir, script dir, and stdlib
+- ✅ **Classes and functions**: Export anything from modules
+- ✅ **Constants**: Share constants across modules
+
+---
+
 ## 📈 Performance Benchmarks
 
 ### Comprehensions vs Loops
@@ -488,6 +582,8 @@ async fungsi main():
 ## 📚 Resources
 
 - **Examples**: See `examples/fitur_baru.cy` for comprehensive demos
+- **Module Examples**: See `examples/test_modules.cy` and `examples/test_custom_module.cy`
+- **Module Documentation**: See `MODULE_SYSTEM.md` for complete module guide
 - **Migration Guide**: See `MIGRATION_V2.md` for upgrade instructions  
 - **Changelog**: See `CHANGELOG.md` for detailed changes
 - **Documentation**: See `README.md` for overview

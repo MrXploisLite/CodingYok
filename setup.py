@@ -71,7 +71,7 @@ setup(
     },
     include_package_data=True,
     package_data={
-        "codingyok": ["stdlib/*.cy", "examples/*.cy"],
+        "codingyok": ["stdlib/*.cy", "stdlib_modules/*.cy", "examples/*.cy"],
     },
     project_urls={
         "Bug Reports": "https://github.com/MrXploisLite/CodingYok/issues",
