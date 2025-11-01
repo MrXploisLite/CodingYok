@@ -1,10 +1,18 @@
 # 🇮🇩 CodingYok - Bahasa Pemrograman Indonesia
 
-![CodingYok Logo](https://img.shields.io/badge/CodingYok-v1.0.0-blue)
+![CodingYok Logo](https://img.shields.io/badge/CodingYok-v2.0.0-blue)
 ![Python](https://img.shields.io/badge/Python-3.8+-green)
 ![License](https://img.shields.io/badge/License-MIT-yellow)
 
 **CodingYok** adalah bahasa pemrograman modern yang dirancang khusus untuk programmer Indonesia. Dengan syntax yang familiar seperti Python namun menggunakan kata kunci bahasa Indonesia, CodingYok membuat coding menjadi lebih mudah dan natural bagi developer Indonesia.
+
+## 🎉 Apa yang Baru di v2.0?
+
+- ✨ **List/Dict/Set Comprehensions** - Sintaks modern untuk pembuatan koleksi
+- 🔄 **Generators dengan `hasilkan`** - Fungsi yang menghasilkan nilai secara lazy
+- 🎯 **Pattern Matching `cocokkan/kasus`** - Pattern matching ala Python 3.10+
+- 💡 **Error Messages yang Lebih Baik** - Saran "mungkin maksud Anda" untuk typo
+- 📦 **Set Data Type** - Dukungan penuh untuk tipe data set
 
 ## ✨ Fitur Utama
 
@@ -123,6 +131,74 @@ kelas Kucing(Hewan):
 kucing = Kucing("Kitty")
 kucing.suara()      # Output: Kitty mengeong: Meow!
 kucing.main()       # Output: Kitty sedang bermain
+```
+
+### Comprehensions (NEW in v2.0!)
+```codingyok
+# List comprehension
+angka = [1, 2, 3, 4, 5]
+kuadrat = [x * x untuk x dalam angka]
+tulis(kuadrat)  # Output: [1, 4, 9, 16, 25]
+
+# List comprehension dengan kondisi
+genap = [x untuk x dalam angka jika x % 2 == 0]
+tulis(genap)  # Output: [2, 4]
+
+# Dictionary comprehension
+angka_dict = {x: x * x untuk x dalam rentang(1, 6)}
+tulis(angka_dict)  # Output: {1: 1, 2: 4, 3: 9, 4: 16, 5: 25}
+
+# Set comprehension
+set_unik = {x untuk x dalam [1, 2, 2, 3, 3, 4]}
+tulis(set_unik)  # Output: {1, 2, 3, 4}
+```
+
+### Generators (NEW in v2.0!)
+```codingyok
+# Generator dengan hasilkan
+fungsi fibonacci(n):
+    a = 0
+    b = 1
+    counter = 0
+    selama counter < n:
+        hasilkan a
+        temp = a
+        a = b
+        b = temp + b
+        counter += 1
+
+# Menggunakan generator
+untuk angka dalam fibonacci(10):
+    tulis(angka)  # Output: 0, 1, 1, 2, 3, 5, 8, 13, 21, 34
+```
+
+### Pattern Matching (NEW in v2.0!)
+```codingyok
+# Pattern matching sederhana
+fungsi cek_nilai(nilai):
+    cocokkan nilai:
+        kasus _ jika nilai >= 90:
+            tulis("A - Sangat Baik!")
+        kasus _ jika nilai >= 80:
+            tulis("B - Baik!")
+        kasus _ jika nilai >= 70:
+            tulis("C - Cukup")
+        kasus _:
+            tulis("Perlu belajar lebih giat")
+
+cek_nilai(85)  # Output: B - Baik!
+
+# Pattern matching dengan nilai spesifik
+fungsi sapa(bahasa):
+    cocokkan bahasa:
+        kasus "indonesia":
+            tulis("Halo!")
+        kasus "english":
+            tulis("Hello!")
+        kasus _:
+            tulis("Hi!")
+
+sapa("indonesia")  # Output: Halo!
 ```
 
 ### Fitur Indonesia

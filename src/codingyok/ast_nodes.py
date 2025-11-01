@@ -4,7 +4,7 @@ Abstract Syntax Tree (AST) node definitions for CodingYok
 
 from abc import ABC, abstractmethod
 from typing import Any, List, Optional, Union, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 class ASTNode(ABC):
@@ -133,6 +133,56 @@ class FStringExpression(Expression):
         return visitor.visit_fstring(self)
 
 
+@dataclass
+class ListComprehension(Expression):
+    """List comprehension [expr untuk var dalam iterable jika condition]"""
+
+    element: Expression
+    variable: str
+    iterable: Expression
+    condition: Optional[Expression] = None
+
+    def accept(self, visitor):
+        return visitor.visit_list_comprehension(self)
+
+
+@dataclass
+class DictComprehension(Expression):
+    """Dict comprehension {key: value untuk var dalam iterable jika condition}"""
+
+    key: Expression
+    value: Expression
+    variable: str
+    iterable: Expression
+    condition: Optional[Expression] = None
+
+    def accept(self, visitor):
+        return visitor.visit_dict_comprehension(self)
+
+
+@dataclass
+class SetExpression(Expression):
+    """Set literals {1, 2, 3}"""
+
+    elements: List[Expression]
+
+    def accept(self, visitor):
+        return visitor.visit_set(self)
+
+
+@dataclass
+class SetComprehension(Expression):
+    """Set comprehension {expr untuk var dalam iterable jika condition}"""
+
+    element: Expression
+    variable: str
+    iterable: Expression
+    condition: Optional[Expression] = None
+
+    def accept(self, visitor):
+        return visitor.visit_set_comprehension(self)
+
+
 # Statements
 class Statement(ASTNode):
     """Base class for all statements"""
@@ -226,6 +276,7 @@ class FunctionDefinition(Statement):
     parameters: List[str]
     body: List[Statement]
     defaults: List[Optional[Expression]]
+    decorators: List[str] = field(default_factory=list)
 
     def accept(self, visitor):
         return visitor.visit_function_def(self)
@@ -341,6 +392,36 @@ class WithStatement(Statement):
 
     def accept(self, visitor):
         return visitor.visit_with(self)
+
+
+@dataclass
+class YieldStatement(Statement):
+    """hasilkan statement (for generators)"""
+
+    value: Optional[Expression]
+
+    def accept(self, visitor):
+        return visitor.visit_yield(self)
+
+
+@dataclass
+class MatchStatement(Statement):
+    """cocokkan statement (pattern matching)"""
+
+    value: Expression
+    cases: List["MatchCase"]
+
+    def accept(self, visitor):
+        return visitor.visit_match(self)
+
+
+@dataclass
+class MatchCase:
+    """kasus clause in cocokkan statement"""
+
+    pattern: Union[Expression, List[Expression], str]
+    guard: Optional[Expression]
+    body: List[Statement]
 
 
 @dataclass

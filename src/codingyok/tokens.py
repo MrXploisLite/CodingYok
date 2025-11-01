@@ -48,6 +48,11 @@ class TokenType(Enum):
     HAPUS = auto()  # del
     LEMPAR = auto()  # raise
     DIRI = auto()  # self
+    HASILKAN = auto()  # yield
+    COCOKKAN = auto()  # match
+    KASUS = auto()  # case
+    ASYNC = auto()  # async
+    MENUNGGU = auto()  # await
 
     # Boolean and None
     BENAR = auto()  # True
@@ -146,6 +151,11 @@ INDONESIAN_KEYWORDS = {
     "hapus": TokenType.HAPUS,
     "lempar": TokenType.LEMPAR,
     "diri": TokenType.DIRI,
+    "hasilkan": TokenType.HASILKAN,
+    "cocokkan": TokenType.COCOKKAN,
+    "kasus": TokenType.KASUS,
+    "async": TokenType.ASYNC,
+    "menunggu": TokenType.MENUNGGU,
     "benar": TokenType.BENAR,
     "salah": TokenType.SALAH,
     "kosong": TokenType.KOSONG,
