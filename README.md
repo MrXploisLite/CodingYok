@@ -8,13 +8,13 @@
 
 ## ✨ Highlights
 
-- � 🇩 **Full Indonesian** - Keywords, error messages, dan built-in functions dalam Bahasa Indonesia
-- � ***Python-like** - Syntax familiar, mudah dipelajari
-- � **Mondern Features** - Lambda, generators, pattern matching, exception handling
+- 🇮🇩 **Full Indonesian** - Keywords, error messages, dan built-in functions dalam Bahasa Indonesia
+- 🐍 **Python-like** - Syntax familiar, mudah dipelajari
+- ⚡ **Modern Features** - Lambda, generators, pattern matching, exception handling
 - 📦 **Module System** - Organize code dengan `impor` dan `dari...impor`
 - 🌐 **Built-in Web** - HTTP server dan client included
 
-## � Quick Stairt
+## 🚀 Quick Start
 
 ```bash
 # Install
