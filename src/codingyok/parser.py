@@ -404,7 +404,7 @@ class CodingYokParser:
         stop = None
         step = None
 
-        # Parse start (optional)
+        # Parse start (optional for slice, required for index)
         is_colon = self.check(TokenType.COLON)
         is_bracket = self.check(TokenType.RIGHT_BRACKET)
         if not is_colon and not is_bracket:
@@ -426,7 +426,10 @@ class CodingYokParser:
             self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah slice")
             return SliceExpression(obj, start, stop, step)
         else:
+            # Regular index access - start must be set
             self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah indeks")
+            if start is None:
+                self.error("Diharapkan indeks")
             return IndexExpression(obj, start)
 
     def finish_call(self, callee: Expression) -> CallExpression:
