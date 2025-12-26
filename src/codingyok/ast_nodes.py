@@ -184,6 +184,16 @@ class SetComprehension(Expression):
 
 
 @dataclass
+class TupleExpression(Expression):
+    """Tuple literals (1, 2, 3) or implicit a, b, c"""
+
+    elements: List[Expression]
+
+    def accept(self, visitor):
+        return visitor.visit_tuple(self)
+
+
+@dataclass
 class LambdaExpression(Expression):
     """Lambda expression (anonymous function)"""
 
@@ -255,6 +265,17 @@ class IndexAssignmentStatement(Statement):
 
 
 @dataclass
+class TupleUnpackingStatement(Statement):
+    """Tuple unpacking assignment (a, b = 1, 2)"""
+
+    targets: List[str]
+    value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_tuple_unpacking(self)
+
+
+@dataclass
 class IfStatement(Statement):
     """jika statement"""
 
@@ -282,7 +303,7 @@ class WhileStatement(Statement):
 class ForStatement(Statement):
     """untuk statement"""
 
-    variable: str
+    variable: Union[str, List[str]]  # Single var or tuple unpacking
     iterable: Expression
     body: List[Statement]
 

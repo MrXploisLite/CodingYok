@@ -278,6 +278,22 @@ def pilih_acak(sequence: Any) -> Any:
         raise CodingYokValueError("pilih_acak() membutuhkan sequence yang tidak kosong")
 
 
+def enumerate_indo(iterable: Any, start: int = 0):
+    """Enumerate iterable with index (enumerate in Python)"""
+    try:
+        return enumerate(iterable, start)
+    except TypeError:
+        raise CodingYokTypeError("enumerate() membutuhkan iterable")
+
+
+def zip_indo(*iterables):
+    """Zip multiple iterables together (zip in Python)"""
+    try:
+        return zip(*iterables)
+    except TypeError:
+        raise CodingYokTypeError("zip() membutuhkan iterable")
+
+
 def acak_urutan(sequence: list) -> None:
     """Shuffle sequence in place (random.shuffle)"""
     try:
@@ -443,6 +459,8 @@ def get_builtin_functions() -> Dict[str, Any]:
         "acak": acak,
         "acak_int": acak_int,
         "pilih_acak": pilih_acak,
+        "enumerate": enumerate_indo,
+        "zip": zip_indo,
         "acak_urutan": acak_urutan,
         # String functions
         "huruf_besar": huruf_besar,

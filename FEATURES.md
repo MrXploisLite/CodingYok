@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description |
 |---------|-------------|
+| Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` |
 | List/Dict/Set Comprehensions | Sintaks modern untuk pembuatan koleksi |
 | Set Literals | Native set data type `{1, 2, 3}` |
 | Generators (`hasilkan`) | Memory-efficient iterators |
@@ -102,6 +103,40 @@ fungsi fibonacci(n):
 
 untuk num dalam fibonacci(10):
     tulis(num)
+```
+
+---
+
+## 📦 Tuple Unpacking
+
+```codingyok
+# Basic unpacking
+a, b = [1, 2]
+x, y, z = [10, 20, 30]
+
+# Swap values
+a, b = [b, a]
+
+# For loop with unpacking
+items = [[1, 2], [3, 4], [5, 6]]
+untuk x, y dalam items:
+    tulis(f"{x} + {y} = {x + y}")
+
+# Dict items iteration
+data = {"nama": "Budi", "umur": 25}
+untuk key, value dalam data.items():
+    tulis(f"{key}: {value}")
+
+# Enumerate with unpacking
+buah = ["apel", "jeruk", "mangga"]
+untuk i, nama dalam enumerate(buah):
+    tulis(f"{i + 1}. {nama}")
+
+# Zip with unpacking
+nama_list = ["Budi", "Ani"]
+umur_list = [25, 22]
+untuk nama, umur dalam zip(nama_list, umur_list):
+    tulis(f"{nama} berumur {umur} tahun")
 ```
 
 ---
@@ -349,6 +384,8 @@ Kesalahan Runtime: Nama 'namaa' tidak ditemukan
 | `maksimum(iter)`, `minimum(iter)` | Max/min value |
 | `urutkan(iter)` | Sort iterable |
 | `balik(iter)` | Reverse iterable |
+| `enumerate(iter)` | Enumerate with index |
+| `zip(iter1, iter2)` | Zip iterables together |
 | `abs(n)`, `bulat(n)` | Absolute/round |
 | `akar(n)`, `pangkat(a, b)` | Math functions |
 | `acak()`, `acak_int(a, b)` | Random numbers |

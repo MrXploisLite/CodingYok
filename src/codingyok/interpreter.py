@@ -340,7 +340,25 @@ class CodingYokInterpreter:
 
         try:
             for item in iterable:
-                self.environment.define(stmt.variable, item)
+                # Handle tuple unpacking in for loop
+                if isinstance(stmt.variable, list):
+                    # Tuple unpacking: untuk a, b dalam items
+                    if not hasattr(item, "__iter__") or isinstance(item, str):
+                        raise CodingYokTypeError(
+                            f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
+                            f"nilai"
+                        )
+                    item_list = list(item)
+                    if len(item_list) != len(stmt.variable):
+                        raise CodingYokValueError(
+                            f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
+                            f"nilai, mendapat {len(item_list)}"
+                        )
+                    for var, val in zip(stmt.variable, item_list):
+                        self.environment.define(var, val)
+                else:
+                    # Single variable
+                    self.environment.define(stmt.variable, item)
 
                 try:
                     for statement in stmt.body:
@@ -349,6 +367,25 @@ class CodingYokInterpreter:
                     continue
         except BreakException:
             pass
+
+    def visit_tuple_unpacking(self, stmt) -> None:
+        """Visit tuple unpacking statement (a, b = 1, 2)"""
+        value = self.evaluate(stmt.value)
+
+        # Convert to list if iterable
+        if hasattr(value, "__iter__") and not isinstance(value, (str, dict)):
+            values = list(value)
+        else:
+            raise CodingYokTypeError("Nilai harus berupa iterable untuk unpacking")
+
+        if len(values) != len(stmt.targets):
+            raise CodingYokValueError(
+                f"Tidak dapat unpack: diharapkan {len(stmt.targets)} nilai, "
+                f"mendapat {len(values)}"
+            )
+
+        for target, val in zip(stmt.targets, values):
+            self.environment.define(target, val)
 
     def visit_function_def(self, stmt: FunctionDefinition) -> None:
         """Visit function definition"""
@@ -778,6 +815,13 @@ class CodingYokInterpreter:
         for element in expr.elements:
             elements.append(self.evaluate(element))
         return elements
+
+    def visit_tuple(self, expr) -> tuple:
+        """Visit tuple expression"""
+        elements = []
+        for element in expr.elements:
+            elements.append(self.evaluate(element))
+        return tuple(elements)
 
     def visit_dict(self, expr: DictExpression) -> Dict[Any, Any]:
         """Visit dictionary expression"""

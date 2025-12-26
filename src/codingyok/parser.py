@@ -208,6 +208,23 @@ class CodingYokParser:
         """Parse expression statement or assignment"""
         expr = self.expression()
 
+        # Check for tuple unpacking (a, b = 1, 2)
+        if isinstance(expr, IdentifierExpression) and self.check(TokenType.COMMA):
+            # Could be tuple unpacking
+            targets = [expr.name]
+            while self.match(TokenType.COMMA):
+                if self.check(TokenType.IDENTIFIER):
+                    targets.append(self.advance().value)
+                else:
+                    break
+
+            if self.match(TokenType.ASSIGN):
+                value = self.expression()
+                return TupleUnpackingStatement(targets, value)
+            else:
+                # Not an assignment, revert - this shouldn't happen normally
+                self.error("Diharapkan '=' setelah tuple unpacking")
+
         # Check for assignment (including compound assignments)
         if self.match(
             TokenType.ASSIGN,
@@ -680,7 +697,23 @@ class CodingYokParser:
 
     def for_statement(self) -> ForStatement:
         """Parse for statement"""
+        # Check for tuple unpacking (untuk a, b dalam items)
         variable = self.consume(TokenType.IDENTIFIER, "Diharapkan nama variabel").value
+
+        if self.match(TokenType.COMMA):
+            # Tuple unpacking in for loop
+            variables = [variable]
+            variables.append(
+                self.consume(TokenType.IDENTIFIER, "Diharapkan nama variabel").value
+            )
+            while self.match(TokenType.COMMA):
+                variables.append(
+                    self.consume(
+                        TokenType.IDENTIFIER, "Diharapkan nama variabel"
+                    ).value
+                )
+            variable = variables
+
         self.consume(TokenType.DALAM, "Diharapkan 'dalam' setelah variabel untuk")
 
         iterable = self.expression()
