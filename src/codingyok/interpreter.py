@@ -566,7 +566,6 @@ class CodingYokInterpreter:
                     msg = str(exception.fields["pesan"])
                 elif "message" in exception.fields:
                     msg = str(exception.fields["message"])
-                
                 # Map to Python exceptions
                 exc_map = {
                     "ValueError": ValueError,
