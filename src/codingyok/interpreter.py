@@ -764,6 +764,12 @@ class CodingYokInterpreter:
         else:
             return self.evaluate(expr.false_value)
 
+    def visit_walrus(self, expr) -> Any:
+        """Visit walrus expression (name := value)"""
+        value = self.evaluate(expr.value)
+        self.environment.define(expr.name, value)
+        return value
+
     def visit_unary(self, expr: UnaryExpression) -> Any:
         """Visit unary expression"""
         operand = self.evaluate(expr.operand)

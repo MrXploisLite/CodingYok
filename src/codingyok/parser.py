@@ -477,6 +477,22 @@ class CodingYokParser:
             return IdentifierExpression(self.previous().value)
 
         if self.match(TokenType.LEFT_PAREN):
+            # Check for walrus operator (name := value)
+            if self.check(TokenType.IDENTIFIER):
+                # Save position to backtrack if not walrus
+                saved_pos = self.current
+                name_token = self.advance()
+                if self.match(TokenType.WALRUS):
+                    value = self.expression()
+                    self.consume(
+                        TokenType.RIGHT_PAREN,
+                        "Diharapkan ')' setelah walrus expression"
+                    )
+                    return WalrusExpression(name_token.value, value)
+                else:
+                    # Not walrus, backtrack
+                    self.current = saved_pos
+
             expr = self.expression()
             self.consume(TokenType.RIGHT_PAREN, "Diharapkan ')' setelah ekspresi")
             return expr

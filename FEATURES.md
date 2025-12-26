@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description |
 |---------|-------------|
+| Walrus Operator | `(x := value)` assignment expression |
 | Ternary Expression | `x jika kondisi kalau_tidak y` inline conditional |
 | Slicing | `arr[start:stop:step]` untuk list dan string |
 | Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` |
@@ -192,6 +193,27 @@ tulis("positif" jika n > 0 kalau_tidak "negatif")
 
 # In list comprehension
 hasil = ["genap" jika n % 2 == 0 kalau_tidak "ganjil" untuk n dalam angka]
+```
+
+---
+
+## 🦭 Walrus Operator
+
+```codingyok
+# Assignment expression - assign and return value
+tulis((x := 10))  # prints 10, x is now 10
+
+# In conditions
+jika (n := panjang(data)) > 3:
+    tulis(f"List punya {n} elemen")
+
+# In while loops
+selama (line := baca_baris()):
+    tulis(line)
+
+# With calculations
+tulis(f"Total: {(total := a + b)}")
+tulis(f"Variable: {total}")
 ```
 
 ---

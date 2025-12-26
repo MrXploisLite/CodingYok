@@ -72,6 +72,17 @@ class TernaryExpression(Expression):
 
 
 @dataclass
+class WalrusExpression(Expression):
+    """Walrus/assignment expression (name := value)"""
+
+    name: str
+    value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_walrus(self)
+
+
+@dataclass
 class UnaryExpression(Expression):
     """Unary operations (-a, bukan a, etc.)"""
 

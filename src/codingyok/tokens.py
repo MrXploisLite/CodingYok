@@ -78,6 +78,7 @@ class TokenType(Enum):
 
     # Assignment
     ASSIGN = auto()  # =
+    WALRUS = auto()  # :=
     PLUS_ASSIGN = auto()  # +=
     MINUS_ASSIGN = auto()  # -=
     MULTIPLY_ASSIGN = auto()  # *=
@@ -177,6 +178,7 @@ OPERATORS = {
     ">": TokenType.GREATER_THAN,
     ">=": TokenType.GREATER_EQUAL,
     "=": TokenType.ASSIGN,
+    ":=": TokenType.WALRUS,
     "+=": TokenType.PLUS_ASSIGN,
     "-=": TokenType.MINUS_ASSIGN,
     "*=": TokenType.MULTIPLY_ASSIGN,
