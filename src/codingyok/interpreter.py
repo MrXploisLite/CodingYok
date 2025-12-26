@@ -294,7 +294,9 @@ class CodingYokInterpreter:
         try:
             obj[index] = value
         except (TypeError, KeyError, IndexError) as e:
-            raise CodingYokRuntimeError(f"Tidak dapat menetapkan nilai pada indeks: {e}")
+            raise CodingYokRuntimeError(
+                f"Tidak dapat menetapkan nilai pada indeks: {e}"
+            )
 
     def visit_if(self, stmt: IfStatement) -> None:
         """Visit if statement"""
