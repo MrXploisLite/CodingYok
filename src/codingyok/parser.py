@@ -400,24 +400,22 @@ class CodingYokParser:
 
     def parse_index_or_slice(self, obj: Expression) -> Expression:
         """Parse index access or slice expression"""
-        # Check if this is a slice (has colon)
         start = None
         stop = None
         step = None
 
         # Parse start (optional)
-        if not self.check(TokenType.COLON) and not self.check(
-            TokenType.RIGHT_BRACKET
-        ):
+        is_colon = self.check(TokenType.COLON)
+        is_bracket = self.check(TokenType.RIGHT_BRACKET)
+        if not is_colon and not is_bracket:
             start = self.expression()
 
         # Check for slice
         if self.match(TokenType.COLON):
-            # This is a slice
             # Parse stop (optional)
-            if not self.check(TokenType.COLON) and not self.check(
-                TokenType.RIGHT_BRACKET
-            ):
+            is_colon = self.check(TokenType.COLON)
+            is_bracket = self.check(TokenType.RIGHT_BRACKET)
+            if not is_colon and not is_bracket:
                 stop = self.expression()
 
             # Parse step (optional)
@@ -428,7 +426,6 @@ class CodingYokParser:
             self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah slice")
             return SliceExpression(obj, start, stop, step)
         else:
-            # Regular index access
             self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah indeks")
             return IndexExpression(obj, start)
 
