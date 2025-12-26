@@ -244,6 +244,17 @@ class AttributeAssignmentStatement(Statement):
 
 
 @dataclass
+class IndexAssignmentStatement(Statement):
+    """Index assignment (obj[key] = value)"""
+
+    target: IndexExpression
+    value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_index_assignment(self)
+
+
+@dataclass
 class IfStatement(Statement):
     """jika statement"""
 

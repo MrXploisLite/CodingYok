@@ -255,7 +255,7 @@ kelas User:
         diri.umur = umur
     
     fungsi validate(diri):
-        jika bukan "@" dalam diri.email:
+        jika bukan ("@" dalam diri.email):
             lempar ValueError(f"Email tidak valid: {diri.email}")
         jika diri.umur < 0 atau diri.umur > 150:
             lempar ValueError(f"Umur tidak valid: {diri.umur}")

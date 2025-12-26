@@ -285,6 +285,17 @@ class CodingYokInterpreter:
                 obj_type = type(obj).__name__
                 raise CodingYokAttributeError(obj_type, stmt.target.attribute)
 
+    def visit_index_assignment(self, stmt) -> None:
+        """Visit index assignment statement (arr[i] = value, dict[key] = value)"""
+        obj = self.evaluate(stmt.target.object)
+        index = self.evaluate(stmt.target.index)
+        value = self.evaluate(stmt.value)
+
+        try:
+            obj[index] = value
+        except (TypeError, KeyError, IndexError) as e:
+            raise CodingYokRuntimeError(f"Tidak dapat menetapkan nilai pada indeks: {e}")
+
     def visit_if(self, stmt: IfStatement) -> None:
         """Visit if statement"""
         condition_value = self.evaluate(stmt.condition)
@@ -544,6 +555,28 @@ class CodingYokInterpreter:
                 raise CodingYokRuntimeError(exception)
             elif isinstance(exception, BaseException):
                 raise exception
+            elif isinstance(exception, CodingYokInstance):
+                # Handle CodingYok exception instances
+                exc_name = exception.klass.name
+                # Get message if available
+                msg = ""
+                if "pesan" in exception.fields:
+                    msg = str(exception.fields["pesan"])
+                elif "message" in exception.fields:
+                    msg = str(exception.fields["message"])
+                
+                # Map to Python exceptions
+                exc_map = {
+                    "ValueError": ValueError,
+                    "TypeError": TypeError,
+                    "IndexError": IndexError,
+                    "KeyError": KeyError,
+                    "ZeroDivisionError": ZeroDivisionError,
+                    "AttributeError": AttributeError,
+                    "Exception": Exception,
+                }
+                exc_class = exc_map.get(exc_name, Exception)
+                raise exc_class(msg if msg else exc_name)
             else:
                 raise CodingYokRuntimeError(
                     f"Objek yang di-raise harus berupa exception: {exception}"

@@ -240,6 +240,17 @@ class CodingYokParser:
                     value = BinaryExpression(expr, binary_op, value)
 
                 return AttributeAssignmentStatement(expr, value)
+            elif isinstance(expr, IndexExpression):
+                # Handle index assignment (e.g., arr[0] = value, dict["key"] = value)
+                value = self.expression()
+
+                # Handle compound assignment for index
+                if operator != "=":
+                    op_map = {"+=": "+", "-=": "-", "*=": "*", "/=": "/"}
+                    binary_op = op_map[operator]
+                    value = BinaryExpression(expr, binary_op, value)
+
+                return IndexAssignmentStatement(expr, value)
             else:
                 self.error("Target assignment tidak valid")
 
