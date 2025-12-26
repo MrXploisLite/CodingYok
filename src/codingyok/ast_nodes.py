@@ -3,7 +3,7 @@ Abstract Syntax Tree (AST) node definitions for CodingYok
 """
 
 from abc import ABC, abstractmethod
-from typing import Any, List, Optional, Union, Tuple
+from typing import Any, List, Optional, Union, Tuple, Dict
 from dataclasses import dataclass, field
 
 
@@ -99,6 +99,7 @@ class CallExpression(Expression):
 
     callee: Expression
     arguments: List[Expression]
+    keyword_args: Dict[str, Expression] = field(default_factory=dict)
 
     def accept(self, visitor):
         return visitor.visit_call(self)

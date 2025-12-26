@@ -23,15 +23,21 @@ class CodingYokClass:
         self.methods = methods
 
     def call(
-        self, interpreter: "CodingYokInterpreter", arguments: List[Any]
+        self,
+        interpreter: "CodingYokInterpreter",
+        arguments: List[Any],
+        keyword_args: dict = None,
     ) -> "CodingYokInstance":
         """Create new instance of the class"""
+        if keyword_args is None:
+            keyword_args = {}
+
         instance = CodingYokInstance(self)
 
         # Call __init__ if it exists
         initializer = self.find_method("__init__")
         if initializer:
-            initializer.bind(instance).call(interpreter, arguments)
+            initializer.bind(instance).call(interpreter, arguments, keyword_args)
 
         return instance
 
@@ -82,10 +88,17 @@ class CodingYokBoundMethod:
         self.instance = instance
         self.method = method
 
-    def call(self, interpreter: "CodingYokInterpreter", arguments: List[Any]) -> Any:
+    def call(
+        self,
+        interpreter: "CodingYokInterpreter",
+        arguments: List[Any],
+        keyword_args: dict = None,
+    ) -> Any:
         """Call the bound method"""
+        if keyword_args is None:
+            keyword_args = {}
         # Add 'diri' (self) as first argument
-        return self.method.call(interpreter, [self.instance] + arguments)
+        return self.method.call(interpreter, [self.instance] + arguments, keyword_args)
 
     def __str__(self) -> str:
         return f"<bound method {self.method.declaration.name}>"
@@ -103,8 +116,16 @@ class CodingYokMethod:
         """Bind this method to an instance"""
         return CodingYokBoundMethod(instance, self)
 
-    def call(self, interpreter: "CodingYokInterpreter", arguments: List[Any]) -> Any:
+    def call(
+        self,
+        interpreter: "CodingYokInterpreter",
+        arguments: List[Any],
+        keyword_args: dict = None,
+    ) -> Any:
         """Call the method (unbound)"""
+        if keyword_args is None:
+            keyword_args = {}
+
         from .interpreter import ReturnValue
 
         # Create new environment for method execution
@@ -114,9 +135,11 @@ class CodingYokMethod:
         params = self.declaration.parameters
         defaults = self.declaration.defaults
 
-        # Handle default parameters
+        # Handle positional and keyword arguments
         for i, param in enumerate(params):
-            if i < len(arguments):
+            if param in keyword_args:
+                environment.define(param, keyword_args[param])
+            elif i < len(arguments):
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
                 default_value = interpreter.evaluate(defaults[i])  # type: ignore

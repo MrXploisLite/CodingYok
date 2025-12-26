@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description |
 |---------|-------------|
+| Keyword Arguments | `fungsi(nama="Budi", umur=25)` |
 | Walrus Operator | `(x := value)` assignment expression |
 | Ternary Expression | `x jika kondisi kalau_tidak y` inline conditional |
 | Slicing | `arr[start:stop:step]` untuk list dan string |
@@ -214,6 +215,33 @@ selama (line := baca_baris()):
 # With calculations
 tulis(f"Total: {(total := a + b)}")
 tulis(f"Variable: {total}")
+```
+
+---
+
+## 🔑 Keyword Arguments
+
+```codingyok
+# Function with default parameters
+fungsi info(nama, umur, kota="Jakarta"):
+    tulis(f"{nama}, {umur} tahun, dari {kota}")
+
+# Call with positional args
+info("Budi", 25)
+
+# Call with keyword args
+info("Ani", 22, kota="Bandung")
+
+# All keyword args
+info(nama="Citra", umur=30, kota="Surabaya")
+
+# Mixed positional and keyword
+fungsi greet(nama, salam="Halo", suffix="!"):
+    tulis(f"{salam}, {nama}{suffix}")
+
+greet("Budi")
+greet("Ani", salam="Selamat pagi")
+greet("Citra", suffix="...")
 ```
 
 ---

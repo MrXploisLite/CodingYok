@@ -448,16 +448,43 @@ class CodingYokParser:
     def finish_call(self, callee: Expression) -> CallExpression:
         """Parse function call arguments"""
         arguments = []
+        keyword_args = {}
 
         if not self.check(TokenType.RIGHT_PAREN):
-            arguments.append(self.expression())
+            # Parse first argument
+            arg = self.parse_argument()
+            if isinstance(arg, tuple):
+                keyword_args[arg[0]] = arg[1]
+            else:
+                arguments.append(arg)
 
             while self.match(TokenType.COMMA):
-                arguments.append(self.expression())
+                arg = self.parse_argument()
+                if isinstance(arg, tuple):
+                    keyword_args[arg[0]] = arg[1]
+                else:
+                    if keyword_args:
+                        self.error("Positional argument setelah keyword argument")
+                    arguments.append(arg)
 
         self.consume(TokenType.RIGHT_PAREN, "Diharapkan ')' setelah argumen")
 
-        return CallExpression(callee, arguments)
+        return CallExpression(callee, arguments, keyword_args)
+
+    def parse_argument(self):
+        """Parse a single argument (positional or keyword)"""
+        # Check if this is a keyword argument (name=value)
+        if self.check(TokenType.IDENTIFIER):
+            saved_pos = self.current
+            name_token = self.advance()
+            if self.match(TokenType.ASSIGN):
+                value = self.expression()
+                return (name_token.value, value)
+            else:
+                # Not keyword arg, backtrack
+                self.current = saved_pos
+
+        return self.expression()
 
     def primary(self) -> Expression:
         """Parse primary expression"""

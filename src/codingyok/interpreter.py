@@ -47,10 +47,13 @@ class CodingYokFunction:
 
         return has_yield(self.declaration.body)
 
-    def call(self, interpreter, arguments: List[Any]) -> Any:
+    def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
         """Call the function with given arguments"""
+        if keyword_args is None:
+            keyword_args = {}
+
         if self.is_generator:
-            return self._create_generator(interpreter, arguments)
+            return self._create_generator(interpreter, arguments, keyword_args)
 
         # Create new environment for function execution
         environment = Environment(self.closure)
@@ -59,15 +62,22 @@ class CodingYokFunction:
         params = self.declaration.parameters
         defaults = self.declaration.defaults
 
-        # Handle default parameters
+        # Handle positional and keyword arguments
         for i, param in enumerate(params):
-            if i < len(arguments):
+            if param in keyword_args:
+                # Keyword argument provided
+                environment.define(param, keyword_args[param])
+            elif i < len(arguments):
+                # Positional argument provided
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
+                # Use default value
                 default_value = interpreter.evaluate(defaults[i])
                 environment.define(param, default_value)
             else:
-                raise CodingYokRuntimeError(f"Parameter '{param}' tidak memiliki nilai")
+                raise CodingYokRuntimeError(
+                    f"Parameter '{param}' tidak memiliki nilai"
+                )
 
         # Execute function body
         try:
@@ -84,20 +94,27 @@ class CodingYokFunction:
         finally:
             interpreter.environment = previous
 
-    def _create_generator(self, interpreter, arguments: List[Any]):
+    def _create_generator(self, interpreter, arguments: List[Any], keyword_args: dict = None):
         """Create a generator object"""
+        if keyword_args is None:
+            keyword_args = {}
+
         environment = Environment(self.closure)
         params = self.declaration.parameters
         defaults = self.declaration.defaults
 
         for i, param in enumerate(params):
-            if i < len(arguments):
+            if param in keyword_args:
+                environment.define(param, keyword_args[param])
+            elif i < len(arguments):
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
                 default_value = interpreter.evaluate(defaults[i])
                 environment.define(param, default_value)
             else:
-                raise CodingYokRuntimeError(f"Parameter '{param}' tidak memiliki nilai")
+                raise CodingYokRuntimeError(
+                    f"Parameter '{param}' tidak memiliki nilai"
+                )
 
         def generator():
             previous = interpreter.environment
@@ -791,14 +808,24 @@ class CodingYokInterpreter:
         for arg in expr.arguments:
             arguments.append(self.evaluate(arg))
 
+        # Evaluate keyword arguments
+        keyword_args = {}
+        for name, value_expr in expr.keyword_args.items():
+            keyword_args[name] = self.evaluate(value_expr)
+
         if isinstance(callee, CodingYokFunction):
-            return callee.call(self, arguments)
+            return callee.call(self, arguments, keyword_args)
         elif isinstance(callee, CodingYokClass):
-            return callee.call(self, arguments)
+            return callee.call(self, arguments, keyword_args)
         elif hasattr(callee, "call"):
+            # Check if call method accepts keyword_args
+            import inspect
+            sig = inspect.signature(callee.call)
+            if len(sig.parameters) >= 3:
+                return callee.call(self, arguments, keyword_args)
             return callee.call(self, arguments)
         elif callable(callee):
-            return callee(*arguments)
+            return callee(*arguments, **keyword_args)
         else:
             raise CodingYokTypeError("Objek tidak dapat dipanggil")
 
