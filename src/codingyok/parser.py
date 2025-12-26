@@ -406,7 +406,9 @@ class CodingYokParser:
         step = None
 
         # Parse start (optional)
-        if not self.check(TokenType.COLON) and not self.check(TokenType.RIGHT_BRACKET):
+        if not self.check(TokenType.COLON) and not self.check(
+            TokenType.RIGHT_BRACKET
+        ):
             start = self.expression()
 
         # Check for slice
