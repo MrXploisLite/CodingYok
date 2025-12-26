@@ -104,6 +104,19 @@ class IndexExpression(Expression):
 
 
 @dataclass
+class SliceExpression(Expression):
+    """Slice access (arr[start:stop:step])"""
+
+    object: Expression
+    start: Optional[Expression]
+    stop: Optional[Expression]
+    step: Optional[Expression]
+
+    def accept(self, visitor):
+        return visitor.visit_slice(self)
+
+
+@dataclass
 class ListExpression(Expression):
     """List literals [1, 2, 3]"""
 
@@ -262,6 +275,17 @@ class IndexAssignmentStatement(Statement):
 
     def accept(self, visitor):
         return visitor.visit_index_assignment(self)
+
+
+@dataclass
+class SliceAssignmentStatement(Statement):
+    """Slice assignment (obj[start:stop] = values)"""
+
+    target: "SliceExpression"
+    value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_slice_assignment(self)
 
 
 @dataclass

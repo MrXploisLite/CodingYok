@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description |
 |---------|-------------|
+| Slicing | `arr[start:stop:step]` untuk list dan string |
 | Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` |
 | List/Dict/Set Comprehensions | Sintaks modern untuk pembuatan koleksi |
 | Set Literals | Native set data type `{1, 2, 3}` |
@@ -137,6 +138,38 @@ nama_list = ["Budi", "Ani"]
 umur_list = [25, 22]
 untuk nama, umur dalam zip(nama_list, umur_list):
     tulis(f"{nama} berumur {umur} tahun")
+```
+
+---
+
+## 🔪 Slicing
+
+```codingyok
+angka = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+# Basic slicing
+tulis(angka[2:5])    # [2, 3, 4]
+tulis(angka[:3])     # [0, 1, 2] - from start
+tulis(angka[5:])     # [5, 6, 7, 8, 9] - to end
+tulis(angka[:])      # copy entire list
+
+# Negative indices
+tulis(angka[-3:])    # [7, 8, 9]
+tulis(angka[:-2])    # [0, 1, 2, 3, 4, 5, 6, 7]
+
+# With step
+tulis(angka[::2])    # [0, 2, 4, 6, 8] - every 2nd
+tulis(angka[::-1])   # [9, 8, 7, ...] - reverse
+
+# Slice assignment
+angka[2:5] = [20, 30, 40]  # replace slice
+angka[2:2] = [100, 101]    # insert at position
+angka[2:5] = []            # delete slice
+
+# String slicing
+teks = "Hello World"
+tulis(teks[0:5])     # "Hello"
+tulis(teks[::-1])    # "dlroW olleH"
 ```
 
 ---

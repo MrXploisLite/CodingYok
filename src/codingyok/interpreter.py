@@ -298,6 +298,19 @@ class CodingYokInterpreter:
                 f"Tidak dapat menetapkan nilai pada indeks: {e}"
             )
 
+    def visit_slice_assignment(self, stmt) -> None:
+        """Visit slice assignment statement (arr[start:stop] = values)"""
+        obj = self.evaluate(stmt.target.object)
+        start = self.evaluate(stmt.target.start) if stmt.target.start else None
+        stop = self.evaluate(stmt.target.stop) if stmt.target.stop else None
+        step = self.evaluate(stmt.target.step) if stmt.target.step else None
+        value = self.evaluate(stmt.value)
+
+        try:
+            obj[start:stop:step] = value
+        except TypeError as e:
+            raise CodingYokRuntimeError(f"Tidak dapat menetapkan slice: {e}")
+
     def visit_if(self, stmt: IfStatement) -> None:
         """Visit if statement"""
         condition_value = self.evaluate(stmt.condition)
@@ -808,6 +821,19 @@ class CodingYokInterpreter:
                 raise CodingYokKeyError(index)
             else:
                 raise CodingYokTypeError("Objek tidak mendukung pengindeksan")
+
+    def visit_slice(self, expr) -> Any:
+        """Visit slice expression (arr[start:stop:step])"""
+        obj = self.evaluate(expr.object)
+
+        start = self.evaluate(expr.start) if expr.start else None
+        stop = self.evaluate(expr.stop) if expr.stop else None
+        step = self.evaluate(expr.step) if expr.step else None
+
+        try:
+            return obj[start:stop:step]
+        except TypeError:
+            raise CodingYokTypeError("Objek tidak mendukung slicing")
 
     def visit_list(self, expr: ListExpression) -> List[Any]:
         """Visit list expression"""

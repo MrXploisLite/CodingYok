@@ -268,6 +268,10 @@ class CodingYokParser:
                     value = BinaryExpression(expr, binary_op, value)
 
                 return IndexAssignmentStatement(expr, value)
+            elif isinstance(expr, SliceExpression):
+                # Handle slice assignment (e.g., arr[1:3] = [10, 20])
+                value = self.expression()
+                return SliceAssignmentStatement(expr, value)
             else:
                 self.error("Target assignment tidak valid")
 
@@ -387,13 +391,44 @@ class CodingYokParser:
                 )
                 expr = AttributeExpression(expr, name.value)
             elif self.match(TokenType.LEFT_BRACKET):
-                index = self.expression()
-                self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah indeks")
-                expr = IndexExpression(expr, index)
+                # Check for slice or index
+                expr = self.parse_index_or_slice(expr)
             else:
                 break
 
         return expr
+
+    def parse_index_or_slice(self, obj: Expression) -> Expression:
+        """Parse index access or slice expression"""
+        # Check if this is a slice (has colon)
+        start = None
+        stop = None
+        step = None
+
+        # Parse start (optional)
+        if not self.check(TokenType.COLON) and not self.check(TokenType.RIGHT_BRACKET):
+            start = self.expression()
+
+        # Check for slice
+        if self.match(TokenType.COLON):
+            # This is a slice
+            # Parse stop (optional)
+            if not self.check(TokenType.COLON) and not self.check(
+                TokenType.RIGHT_BRACKET
+            ):
+                stop = self.expression()
+
+            # Parse step (optional)
+            if self.match(TokenType.COLON):
+                if not self.check(TokenType.RIGHT_BRACKET):
+                    step = self.expression()
+
+            self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah slice")
+            return SliceExpression(obj, start, stop, step)
+        else:
+            # Regular index access
+            self.consume(TokenType.RIGHT_BRACKET, "Diharapkan ']' setelah indeks")
+            return IndexExpression(obj, start)
 
     def finish_call(self, callee: Expression) -> CallExpression:
         """Parse function call arguments"""
