@@ -281,6 +281,10 @@ class CodingYokParser:
         """Parse expression"""
         return self.ternary()
 
+    def expression_no_ternary(self) -> Expression:
+        """Parse expression without ternary (for comprehension conditions)"""
+        return self.logical_or()
+
     def ternary(self) -> Expression:
         """Parse ternary expression (value jika condition kalau_tidak other)"""
         expr = self.logical_or()
@@ -550,11 +554,11 @@ class CodingYokParser:
                 TokenType.IDENTIFIER, "Diharapkan nama variabel"
             ).value
             self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
-            iterable = self.expression()
+            iterable = self.expression_no_ternary()
 
             condition = None
             if self.match(TokenType.JIKA):
-                condition = self.expression()
+                condition = self.expression_no_ternary()
 
             self.skip_newlines()
             self.consume(
@@ -592,11 +596,11 @@ class CodingYokParser:
                     TokenType.IDENTIFIER, "Diharapkan nama variabel"
                 ).value
                 self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
-                iterable = self.expression()
+                iterable = self.expression_no_ternary()
 
                 condition = None
                 if self.match(TokenType.JIKA):
-                    condition = self.expression()
+                    condition = self.expression_no_ternary()
 
                 self.skip_newlines()
                 self.consume(
@@ -625,11 +629,11 @@ class CodingYokParser:
                 TokenType.IDENTIFIER, "Diharapkan nama variabel"
             ).value
             self.consume(TokenType.DALAM, "Diharapkan 'dalam' dalam comprehension")
-            iterable = self.expression()
+            iterable = self.expression_no_ternary()
 
             condition = None
             if self.match(TokenType.JIKA):
-                condition = self.expression()
+                condition = self.expression_no_ternary()
 
             self.skip_newlines()
             self.consume(

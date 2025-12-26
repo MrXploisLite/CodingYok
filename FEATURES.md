@@ -2,31 +2,34 @@
 
 ## 🎉 Overview
 
-CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini mencakup semua fitur dari v1.0 hingga v3.0.
+CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini mencakup semua fitur dari v1.0 hingga v4.0.
 
 ---
 
 ## 📊 Feature Summary
 
-| Feature | Description |
-|---------|-------------|
-| Keyword Arguments | `fungsi(nama="Budi", umur=25)` |
-| Walrus Operator | `(x := value)` assignment expression |
-| Ternary Expression | `x jika kondisi kalau_tidak y` inline conditional |
-| Slicing | `arr[start:stop:step]` untuk list dan string |
-| Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` |
-| List/Dict/Set Comprehensions | Sintaks modern untuk pembuatan koleksi |
-| Set Literals | Native set data type `{1, 2, 3}` |
-| Generators (`hasilkan`) | Memory-efficient iterators |
-| Pattern Matching (`cocokkan/kasus`) | Clean conditional logic |
-| Error Suggestions | "Mungkin maksud Anda" untuk typo |
-| Module System (`impor`) | Organize code into modules |
-| Lambda Expressions | Anonymous functions |
-| Exception Handling | `coba/kecuali/akhirnya/lempar` |
-| Context Managers | `dengan` statement |
-| OOP | Classes dengan inheritance |
-| File I/O | JSON, CSV, file operations |
-| Web Framework | Built-in HTTP server |
+| Feature | Description | Version |
+|---------|-------------|---------|
+| F-String | `f"Halo {nama}"` string interpolation | v4.0 |
+| Lambda | `lambda x: x * 2` anonymous functions | v3.0 |
+| Dict Comprehension | `{k: v untuk k dalam items}` | v3.0 |
+| Set Comprehension | `{x untuk x dalam items}` | v3.0 |
+| Keyword Arguments | `fungsi(nama="Budi", umur=25)` | v3.0 |
+| Walrus Operator | `(x := value)` assignment expression | v3.0 |
+| Ternary Expression | `x jika kondisi kalau_tidak y` | v3.0 |
+| Slicing | `arr[start:stop:step]` untuk list dan string | v3.0 |
+| Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` | v3.0 |
+| List Comprehensions | `[x untuk x dalam items]` | v2.0 |
+| Set Literals | Native set data type `{1, 2, 3}` | v2.0 |
+| Generators (`hasilkan`) | Memory-efficient iterators | v2.0 |
+| Pattern Matching (`cocokkan/kasus`) | Clean conditional logic | v2.0 |
+| Error Suggestions | "Mungkin maksud Anda" untuk typo | v2.0 |
+| Module System (`impor`) | Organize code into modules | v2.0 |
+| Exception Handling | `coba/kecuali/akhirnya/lempar` | v2.0 |
+| Context Managers | `dengan` statement | v2.0 |
+| OOP | Classes dengan inheritance | v1.0 |
+| File I/O | JSON, CSV, file operations | v1.0 |
+| Web Framework | Built-in HTTP server | v1.0 |
 
 ---
 
@@ -63,6 +66,37 @@ lambda
 
 # Others
 global, nonlokal, tegas, hapus
+```
+
+---
+
+## �  F-String (String Interpolation)
+
+```codingyok
+# Basic f-string
+nama = "Budi"
+umur = 25
+tulis(f"Nama: {nama}, Umur: {umur}")
+
+# With expressions
+tulis(f"Tahun lahir: {2024 - umur}")
+tulis(f"Umur 5 tahun lagi: {umur + 5}")
+
+# With method calls
+pesan = "halo dunia"
+tulis(f"Uppercase: {pesan.upper()}")
+
+# With list operations
+nilai = [85, 90, 78, 92]
+tulis(f"Rata-rata: {jumlah(nilai) / panjang(nilai)}")
+
+# Nested expressions
+items = ["buku", "pensil", "penghapus"]
+tulis(f"Item pertama: {items[0]}, Total: {panjang(items)}")
+
+# In lambda
+format_info = lambda n, u: f"{n} berumur {u} tahun"
+tulis(format_info("Budi", 25))
 ```
 
 ---
@@ -511,6 +545,7 @@ See `examples/` directory:
 - `fungsi.cy` - Functions
 - `kelas_dan_objek.cy` - OOP
 - `v3_showcase.cy` - All v3 features
+- `v4_showcase.cy` - Lambda, Dict Comprehension, F-String
 - `fitur_indonesia.cy` - Indonesian features
 - `file_dan_data.cy` - File I/O
 - `web_app.cy` - Web framework
