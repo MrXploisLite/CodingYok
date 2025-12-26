@@ -60,6 +60,18 @@ class BinaryExpression(Expression):
 
 
 @dataclass
+class TernaryExpression(Expression):
+    """Ternary/conditional expression (value jika condition kalau_tidak other)"""
+
+    true_value: Expression
+    condition: Expression
+    false_value: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_ternary(self)
+
+
+@dataclass
 class UnaryExpression(Expression):
     """Unary operations (-a, bukan a, etc.)"""
 

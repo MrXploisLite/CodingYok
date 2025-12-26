@@ -279,7 +279,20 @@ class CodingYokParser:
 
     def expression(self) -> Expression:
         """Parse expression"""
-        return self.logical_or()
+        return self.ternary()
+
+    def ternary(self) -> Expression:
+        """Parse ternary expression (value jika condition kalau_tidak other)"""
+        expr = self.logical_or()
+
+        # Check for ternary: expr jika condition kalau_tidak other
+        if self.match(TokenType.JIKA):
+            condition = self.logical_or()
+            self.consume(TokenType.KALAU_TIDAK, "Diharapkan 'kalau_tidak' dalam ekspresi ternary")
+            false_value = self.ternary()  # Right associative
+            return TernaryExpression(expr, condition, false_value)
+
+        return expr
 
     def logical_or(self) -> Expression:
         """Parse logical OR expression"""

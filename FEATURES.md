@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description |
 |---------|-------------|
+| Ternary Expression | `x jika kondisi kalau_tidak y` inline conditional |
 | Slicing | `arr[start:stop:step]` untuk list dan string |
 | Tuple Unpacking | `a, b = [1, 2]` dan `untuk x, y dalam items` |
 | List/Dict/Set Comprehensions | Sintaks modern untuk pembuatan koleksi |
@@ -170,6 +171,27 @@ angka[2:5] = []            # delete slice
 teks = "Hello World"
 tulis(teks[0:5])     # "Hello"
 tulis(teks[::-1])    # "dlroW olleH"
+```
+
+---
+
+## ❓ Ternary Expression
+
+```codingyok
+# Basic ternary (inline if-else)
+hasil = "besar" jika x > 5 kalau_tidak "kecil"
+
+# With numbers
+maks = a jika a > b kalau_tidak b
+
+# Nested ternary
+grade = "A" jika nilai >= 90 kalau_tidak "B" jika nilai >= 80 kalau_tidak "C"
+
+# In function call
+tulis("positif" jika n > 0 kalau_tidak "negatif")
+
+# In list comprehension
+hasil = ["genap" jika n % 2 == 0 kalau_tidak "ganjil" untuk n dalam angka]
 ```
 
 ---

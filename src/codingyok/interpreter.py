@@ -756,6 +756,14 @@ class CodingYokInterpreter:
         else:
             raise CodingYokRuntimeError(f"Operator binary tidak dikenal: {operator}")
 
+    def visit_ternary(self, expr) -> Any:
+        """Visit ternary expression (value jika condition kalau_tidak other)"""
+        condition = self.evaluate(expr.condition)
+        if self.is_truthy(condition):
+            return self.evaluate(expr.true_value)
+        else:
+            return self.evaluate(expr.false_value)
+
     def visit_unary(self, expr: UnaryExpression) -> Any:
         """Visit unary expression"""
         operand = self.evaluate(expr.operand)
