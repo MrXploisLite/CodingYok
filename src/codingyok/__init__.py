@@ -12,7 +12,7 @@ Version 3.0.0 - Advanced Features:
 - Full backward compatibility with v2.0
 """
 
-__version__ = "3.0.0"
+__version__ = "5.0.0"
 __author__ = "MrXploisLite"
 __email__ = "108934584+MrXploisLite@users.noreply.github.com"
 

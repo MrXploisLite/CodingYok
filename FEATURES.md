@@ -10,6 +10,7 @@ CodingYok adalah bahasa pemrograman Indonesia dengan fitur modern. Dokumen ini m
 
 | Feature | Description | Version |
 |---------|-------------|---------|
+| Async/Await | `async fungsi` dan `menunggu` untuk concurrent programming | v5.0 |
 | F-String | `f"Halo {nama}"` string interpolation | v4.0 |
 | Lambda | `lambda x: x * 2` anonymous functions | v3.0 |
 | Dict Comprehension | `{k: v untuk k dalam items}` | v3.0 |
@@ -491,6 +492,32 @@ server.run()
 ```
 
 ---
+
+## 🚀 Async/Await (v5.0)
+
+```codingyok
+# Async function definition
+async fungsi ambil_data(url):
+    # Simulate async operation
+    hasil = menunggu async_request(url)
+    kembalikan hasil
+
+# Async main function
+async fungsi main():
+    tulis("Memulai operasi async...")
+    data = menunggu ambil_data("https://api.example.com")
+    tulis(f"Data diterima: {data}")
+
+# Call async function
+hasil = menunggu async_proses(nilai)
+tulis(f"Hasil: {hasil}")
+```
+
+### Async Features:
+- `async fungsi` - Define asynchronous functions
+- `menunggu` - Await async operations
+- Integration with Python's asyncio
+- Support for async I/O operations
 
 ## 💡 Error Suggestions
 

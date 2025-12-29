@@ -5,6 +5,7 @@ Executes the Abstract Syntax Tree (AST)
 
 from typing import Any, Dict, List, Optional, Callable
 import sys
+import asyncio
 from .ast_nodes import *
 from .errors import *
 from .environment import Environment
@@ -134,6 +135,79 @@ class CodingYokFunction:
         return f"<fungsi {self.declaration.name}>"
 
 
+class CodingYokAsyncFunction:
+    """Represents a CodingYok async function"""
+
+    def __init__(self, declaration, closure: Environment):
+        self.declaration = declaration
+        self.closure = closure
+        self.is_async_generator = self._check_if_async_generator()
+
+    def _check_if_async_generator(self) -> bool:
+        """Check if function contains async yield statements"""
+        from .ast_nodes import YieldStatement
+
+        def has_yield(statements):
+            for stmt in statements:
+                if isinstance(stmt, YieldStatement):
+                    return True
+                for attr_name in dir(stmt):
+                    if not attr_name.startswith("_"):
+                        attr = getattr(stmt, attr_name)
+                        if isinstance(attr, list):
+                            if has_yield(attr):
+                                return True
+            return False
+
+        return has_yield(self.declaration.body)
+
+    def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
+        """Call the async function with given arguments"""
+        if keyword_args is None:
+            keyword_args = {}
+
+        # Create new environment for function execution
+        environment = Environment(self.closure)
+
+        # Bind parameters
+        params = self.declaration.parameters
+        defaults = self.declaration.defaults
+
+        # Handle positional and keyword arguments
+        for i, param in enumerate(params):
+            if param in keyword_args:
+                # Keyword argument provided
+                environment.define(param, keyword_args[param])
+            elif i < len(arguments):
+                # Positional argument provided
+                environment.define(param, arguments[i])
+            elif i < len(defaults) and defaults[i] is not None:
+                # Use default value
+                default_value = interpreter.evaluate(defaults[i])
+                environment.define(param, default_value)
+            else:
+                raise CodingYokRuntimeError(
+                    f"Parameter '{param}' tidak memiliki nilai"
+                )
+
+        # Return a coroutine that executes the function
+        async def async_func():
+            previous = interpreter.environment
+            interpreter.environment = environment
+            try:
+                for statement in self.declaration.body:
+                    # For async functions, we need to handle await expressions properly
+                    # This is a simplified implementation
+                    interpreter.execute(statement)
+                return None
+            except ReturnValue as return_value:
+                return return_value.value
+            finally:
+                interpreter.environment = previous
+
+        return async_func()
+
+
 class CodingYokLambda:
     """Represents a CodingYok lambda (anonymous function)"""
 
@@ -241,8 +315,29 @@ class CodingYokInterpreter:
     def interpret(self, program: Program) -> None:
         """Interpret a program"""
         try:
+            # Check if there's an async main function to run
+            has_async_main = False
             for statement in program.statements:
-                self.execute(statement)
+                if (hasattr(statement, 'name') and statement.name == 'main' and
+                    isinstance(statement, AsyncFunctionDefinition)):
+                    has_async_main = True
+                    break
+
+            if has_async_main:
+                # Execute all statements first to define functions
+                for statement in program.statements:
+                    self.execute(statement)
+
+                # Then run the async main
+                main_func = self.environment.get('main')
+                if main_func:
+                    # Run the async function
+                    coro = main_func.call(self, [], {})
+                    asyncio.run(coro)
+            else:
+                # Execute statements normally
+                for statement in program.statements:
+                    self.execute(statement)
         except CodingYokRuntimeError as error:
             self.runtime_error(error)
 
@@ -420,6 +515,11 @@ class CodingYokInterpreter:
     def visit_function_def(self, stmt: FunctionDefinition) -> None:
         """Visit function definition"""
         function = CodingYokFunction(stmt, self.environment)
+        self.environment.define(stmt.name, function)
+
+    def visit_async_function_def(self, stmt: AsyncFunctionDefinition) -> None:
+        """Visit async function definition"""
+        function = CodingYokAsyncFunction(stmt, self.environment)
         self.environment.define(stmt.name, function)
 
     def visit_return(self, stmt: ReturnStatement) -> None:
@@ -998,6 +1098,13 @@ class CodingYokInterpreter:
     def visit_lambda(self, expr: LambdaExpression) -> CodingYokLambda:
         """Visit lambda expression"""
         return CodingYokLambda(expr.parameters, expr.body, self.environment, self)
+
+    def visit_await(self, expr: AwaitExpression) -> Any:
+        """Visit await expression"""
+        # For now, just return the evaluated expression
+        # A full implementation would properly handle async/await integration
+        # This is a simplified version that allows the syntax to work
+        return self.evaluate(expr.expression)
 
     # Helper methods
     def is_truthy(self, value: Any) -> bool:

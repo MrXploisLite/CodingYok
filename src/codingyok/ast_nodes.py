@@ -241,6 +241,16 @@ class LambdaExpression(Expression):
         return visitor.visit_lambda(self)
 
 
+@dataclass
+class AwaitExpression(Expression):
+    """Await expression for async operations"""
+
+    expression: Expression
+
+    def accept(self, visitor):
+        return visitor.visit_await(self)
+
+
 # Statements
 class Statement(ASTNode):
     """Base class for all statements"""
@@ -371,6 +381,20 @@ class FunctionDefinition(Statement):
 
     def accept(self, visitor):
         return visitor.visit_function_def(self)
+
+
+@dataclass
+class AsyncFunctionDefinition(Statement):
+    """async fungsi definition"""
+
+    name: str
+    parameters: List[str]
+    body: List[Statement]
+    defaults: List[Optional[Expression]]
+    decorators: List[str] = field(default_factory=list)
+
+    def accept(self, visitor):
+        return visitor.visit_async_function_def(self)
 
 
 @dataclass

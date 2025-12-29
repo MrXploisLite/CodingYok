@@ -23,7 +23,7 @@ def read_requirements():
 
 setup(
     name="codingyok",
-    version="3.0.0",
+    version="5.0.0",
     author="MrXploisLite",
     author_email="108934584+MrXploisLite@users.noreply.github.com",
     description="Bahasa pemrograman modern dengan keyword bahasa Indonesia - Now with Lambda, Exception Handling, and Context Managers!",

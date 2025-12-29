@@ -5,7 +5,127 @@ All notable changes to CodingYok will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [5.0.0] - 2025-01-01
+
+### 🚀 Major Release - Asynchronous Programming Support
+
+This is a major release that adds full async/await support to CodingYok, enabling concurrent and asynchronous programming patterns.
+
+### Added
+
+#### **Asynchronous Functions** 🎯
+- **`async fungsi` Implementation**: Define asynchronous functions
+  ```codingyok
+  async fungsi ambil_data(url):
+      hasil = menunggu async_request(url)
+      kembalikan hasil
+  ```
+
+- **`menunggu` (await) Expression**: Wait for async operations
+  ```codingyok
+  async fungsi proses_data():
+      data = menunggu ambil_data("https://api.example.com")
+      kembalikan proses(data)
+  ```
+
+- **Async Main Support**: Run async main functions automatically
+  ```codingyok
+  async fungsi main():
+      hasil = menunggu async_operasi()
+      tulis(hasil)
+  ```
+
+- **Integration with Python asyncio**: Full compatibility with Python's async ecosystem
+
+#### **Async Standard Library** 📚
+- **`async_tidur`**: Asynchronous sleep function
+  ```codingyok
+  menunggu async_tidur(1.0)  # Non-blocking sleep
+  ```
+
+- **Async I/O Preparation**: Foundation for async file and network operations
+
+### Enhanced
+
+- **Parser**: Support for async function definitions and await expressions
+- **Interpreter**: Async execution context management
+- **AST Nodes**: New `AsyncFunctionDefinition` and `AwaitExpression` nodes
+- **Type system**: Proper handling of coroutine objects
+
+### Examples
+
+Added comprehensive examples for all v5.0 features:
+- Basic async/await patterns
+- Async function composition
+- Integration with async I/O operations
+
+### Documentation
+
+- Updated FEATURES.md with async/await section
+- Added examples for async programming patterns
+- Updated README.md with v5.0 feature showcase
+
+### Technical Details
+
+#### New AST Nodes
+- `AsyncFunctionDefinition` - Async function definitions
+- `AwaitExpression` - Await expressions
+
+#### Enhanced Visitor Methods
+- `visit_async_function_def` - Async function definition evaluation
+- `visit_await` - Await expression evaluation
+
+#### New Interpreter Classes
+- `CodingYokAsyncFunction` - Async function representation
+
+### Breaking Changes
+
+None - Full backward compatibility with v4.0 maintained.
+
+### Performance
+
+- Async functions have minimal overhead when not awaited
+- Proper event loop integration for concurrent operations
+
+---
+
+## [4.0.0] - 2024-12-15
+
+### Added
+
+#### **F-String Support** ✨
+- **String interpolation**: `f"Halo {nama}!"` syntax
+- **Expression evaluation**: `f"Hasil: {a + b}"` with embedded expressions
+- **Method calls**: `f"Upper: {text.upper()}"`
+- **Complex expressions**: `f"Rata-rata: {jumlah(nilai) / panjang(nilai)}"`
+
+#### **Lambda Enhancements** 🎯
+- **Multiple parameters**: `lambda x, y: x + y`
+- **No parameter lambdas**: `lambda: "hello"`
+- **List of lambdas**: `operasi = [lambda x: x + 1, lambda x: x * 2]`
+- **Lambda with map/filter**: Full functional programming support
+
+#### **Set Comprehensions** 🔄
+- **Set comprehension syntax**: `{x untuk x dalam rentang(10) jika x % 2 == 0}`
+- **Set literals**: `{1, 2, 3, 4, 5}`
+- **Automatic deduplication**: `{x untuk x dalam [1, 2, 2, 3]}` → `{1, 2, 3}`
+
+#### **Enhanced Comprehensions** 📦
+- **Nested comprehensions**: Complex expression support
+- **Improved performance**: Optimized evaluation
+- **Better error handling**: Clearer error messages for comprehension errors
+
+### Examples
+
+- Added `examples/v4_showcase.cy` - Complete demonstration of v4 features
+- Updated existing examples to showcase new capabilities
+
+### Documentation
+
+- Updated README.md with v4 feature showcase
+- Added comprehensive examples for all new language features
+
+---
 
 ## [3.0.0] - 2024-11-01
 

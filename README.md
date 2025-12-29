@@ -10,7 +10,7 @@
 
 - 🇮🇩 **Full Indonesian** - Keywords, error messages, dan built-in functions dalam Bahasa Indonesia
 - 🐍 **Python-like** - Syntax familiar, mudah dipelajari
-- ⚡ **Modern Features** - Lambda, generators, pattern matching, exception handling
+- ⚡ **Modern Features** - Async/Await, Lambda, generators, pattern matching, exception handling
 - 📦 **Module System** - Organize code dengan `impor` dan `dari...impor`
 - 🌐 **Built-in Web** - HTTP server dan client included
 
@@ -69,6 +69,11 @@ kelas Orang:
 
 # Lambda
 kuadrat = lambda x: x * x
+
+# Async/Await (v5.0+)
+async fungsi ambil_data(url):
+    hasil = menunggu async_request(url)
+    kembalikan hasil
 
 # Exception Handling
 coba:

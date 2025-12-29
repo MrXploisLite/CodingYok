@@ -99,6 +99,14 @@ class CodingYokParser:
             if self.match(TokenType.INDENT, TokenType.DEDENT):
                 return None
 
+            # Async function definition
+            if self.match(TokenType.ASYNC):
+                # Check if followed by FUNGSI
+                if self.match(TokenType.FUNGSI):
+                    return self.async_function_definition()
+                else:
+                    self.error("Diharapkan 'fungsi' setelah 'async'")
+
             # Function definition
             if self.match(TokenType.FUNGSI):
                 return self.function_definition()
@@ -495,6 +503,10 @@ class CodingYokParser:
         if self.match(TokenType.LAMBDA):
             return self.lambda_expression()
 
+        if self.match(TokenType.MENUNGGU):
+            expr = self.expression()
+            return AwaitExpression(expr)
+
         if self.match(TokenType.BENAR, TokenType.SALAH, TokenType.KOSONG):
             return LiteralExpression(self.previous().value)
 
@@ -724,6 +736,52 @@ class CodingYokParser:
         body = self.block()
 
         return FunctionDefinition(name, parameters, body, defaults)
+
+    def async_function_definition(self) -> AsyncFunctionDefinition:
+        """Parse async function definition"""
+        name = self.consume(TokenType.IDENTIFIER, "Diharapkan nama fungsi").value
+
+        self.consume(TokenType.LEFT_PAREN, "Diharapkan '(' setelah nama fungsi")
+
+        parameters: List[str] = []
+        defaults: List[Optional[Expression]] = []
+
+        if not self.check(TokenType.RIGHT_PAREN):
+            # Parse parameters (allow 'diri' as special case)
+            if self.check(TokenType.DIRI):
+                param = self.advance().value
+            else:
+                param = self.consume(
+                    TokenType.IDENTIFIER, "Diharapkan nama parameter"
+                ).value
+            parameters.append(param)
+
+            # Check for default value
+            if self.match(TokenType.ASSIGN):
+                defaults.append(self.expression())
+            else:
+                defaults.append(None)
+
+            while self.match(TokenType.COMMA):
+                if self.check(TokenType.DIRI):
+                    param = self.advance().value
+                else:
+                    param = self.consume(
+                        TokenType.IDENTIFIER, "Diharapkan nama parameter"
+                    ).value
+                parameters.append(param)
+
+                if self.match(TokenType.ASSIGN):
+                    defaults.append(self.expression())
+                else:
+                    defaults.append(None)
+
+        self.consume(TokenType.RIGHT_PAREN, "Diharapkan ')' setelah parameter")
+        self.consume(TokenType.COLON, "Diharapkan ':' setelah definisi fungsi")
+
+        body = self.block()
+
+        return AsyncFunctionDefinition(name, parameters, body, defaults)
 
     def class_definition(self) -> ClassDefinition:
         """Parse class definition"""

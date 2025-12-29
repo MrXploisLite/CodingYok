@@ -421,6 +421,14 @@ def hitung_statistik(data: List[Union[int, float]]) -> Dict[str, float]:
     }
 
 
+import asyncio
+
+
+def async_tidur(detik: float):
+    """Async sleep function"""
+    return asyncio.sleep(detik)
+
+
 def get_builtin_functions() -> Dict[str, Any]:
     """Get all built-in functions"""
     return {
@@ -454,6 +462,7 @@ def get_builtin_functions() -> Dict[str, Any]:
         # Time functions
         "waktu_sekarang": waktu_sekarang,
         "tidur": tidur,
+        "async_tidur": async_tidur,
         "tanggal_sekarang": tanggal_sekarang,
         # Random functions
         "acak": acak,
