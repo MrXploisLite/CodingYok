@@ -146,6 +146,8 @@ class CodingYokIndentationError(CodingYokSyntaxError):
 
 def format_traceback(error: CodingYokError, source_lines: Optional[list] = None) -> str:
     """Format a nice traceback for CodingYok errors"""
+    from .tokens import INDONESIAN_KEYWORDS
+
     lines = []
 
     lines.append("=" * 50)
@@ -173,6 +175,15 @@ def format_traceback(error: CodingYokError, source_lines: Optional[list] = None)
         lines.append("   - Periksa tanda kurung, kurung siku, dan kurung kurawal")
         lines.append("   - Pastikan indentasi konsisten")
         lines.append("   - Periksa ejaan kata kunci bahasa Indonesia")
+
+        # Check for common keyword typos if it's a syntax error
+        msg_parts = error.message.split("'")
+        if len(msg_parts) >= 2:
+            typo = msg_parts[1]
+            matches = get_close_matches(typo, list(INDONESIAN_KEYWORDS.keys()))
+            if matches:
+                lines.append(f"   - Apakah maksud Anda keyword: {', '.join(matches)}?")
+
     elif isinstance(error, CodingYokNameError):
         lines.append("💡 Tips:")
         lines.append("   - Pastikan variabel sudah didefinisikan sebelum digunakan")
@@ -181,6 +192,10 @@ def format_traceback(error: CodingYokError, source_lines: Optional[list] = None)
         lines.append("💡 Tips:")
         lines.append("   - Periksa tipe data yang digunakan")
         lines.append("   - Pastikan operasi sesuai dengan tipe data")
+    elif isinstance(error, CodingYokZeroDivisionError):
+        lines.append("💡 Tips:")
+        lines.append("   - Pastikan pembagi bukan nol")
+        lines.append("   - Gunakan blok 'coba...kecuali' untuk menangani kasus ini")
 
     lines.append("=" * 50)
 

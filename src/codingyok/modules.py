@@ -65,7 +65,7 @@ class ModuleLoader:
 
         return None
 
-    def load_module(
+    async def load_module(
         self, module_name: str, alias: Optional[str] = None
     ) -> ModuleObject:
         """Load a module by name"""
@@ -111,7 +111,7 @@ class ModuleLoader:
         try:
             self.interpreter.environment = module_env
             for statement in ast.statements:
-                self.interpreter.execute(statement)
+                await self.interpreter.execute(statement)
         except Exception as e:
             # If there's an error during module execution, propagate it
             raise RuntimeError(f"Error saat mengeksekusi modul '{module_name}': {e}")
@@ -126,19 +126,19 @@ class ModuleLoader:
 
         return module_obj
 
-    def import_module(self, module_name: str, alias: Optional[str] = None):
+    async def import_module(self, module_name: str, alias: Optional[str] = None):
         """Import a module and add it to the current environment"""
-        module_obj = self.load_module(module_name, alias)
+        module_obj = await self.load_module(module_name, alias)
 
         # Add to current environment
         name_to_use = alias if alias else module_name
         self.interpreter.environment.define(name_to_use, module_obj)
 
-    def import_from_module(
+    async def import_from_module(
         self, module_name: str, names: List[str], aliases: List[Optional[str]]
     ):
         """Import specific names from a module"""
-        module_obj = self.load_module(module_name)
+        module_obj = await self.load_module(module_name)
 
         # Import each requested name
         for i, name in enumerate(names):

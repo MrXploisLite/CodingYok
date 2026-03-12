@@ -5,6 +5,7 @@ Tests for CodingYok module system
 import sys
 import os
 import tempfile
+import asyncio
 from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
@@ -16,70 +17,76 @@ from codingyok.interpreter import CodingYokInterpreter
 from codingyok.errors import CodingYokRuntimeError
 
 
-def run_code(code, script_dir=None):
+async def run_code(code, script_dir=None):
     """Helper to run CodingYok code"""
     lexer = CodingYokLexer(code)
     tokens = lexer.tokenize()
     parser = CodingYokParser(tokens)
     ast = parser.parse()
     interpreter = CodingYokInterpreter(script_dir=script_dir)
-    interpreter.interpret(ast)
+    await interpreter.interpret(ast)
     return interpreter
 
 
-def test_basic_import():
+@pytest.mark.asyncio
+async def test_basic_import():
     """Test basic module import"""
     code = """
 impor matematika
 hasil = matematika.tambah(5, 3)
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     assert interpreter.environment.get("hasil") == 8
 
 
-def test_import_with_alias():
+@pytest.mark.asyncio
+async def test_import_with_alias():
     """Test import with alias"""
     code = """
 impor matematika sebagai math
 hasil = math.kurang(10, 3)
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     assert interpreter.environment.get("hasil") == 7
 
 
-def test_from_import():
+@pytest.mark.asyncio
+async def test_from_import():
     """Test from import"""
     code = """
 dari matematika impor tambah, kali
 hasil1 = tambah(5, 3)
 hasil2 = kali(4, 6)
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     assert interpreter.environment.get("hasil1") == 8
     assert interpreter.environment.get("hasil2") == 24
 
 
-def test_from_import_with_alias():
+@pytest.mark.asyncio
+async def test_from_import_with_alias():
     """Test from import with alias"""
     code = """
 dari matematika impor tambah sebagai add
 hasil = add(7, 3)
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     assert interpreter.environment.get("hasil") == 10
 
 
-def test_import_constant():
+@pytest.mark.asyncio
+async def test_import_constant():
     """Test importing constants"""
     code = """
 dari matematika impor PI
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     pi_value = interpreter.environment.get("PI")
     assert abs(pi_value - 3.141592653589793) < 0.0001
 
 
-def test_module_not_found():
+@pytest.mark.asyncio
+async def test_module_not_found():
     """Test error when module not found"""
     import io
     import sys
@@ -91,7 +98,7 @@ impor module_yang_tidak_ada
     sys.stderr = io.StringIO()
 
     try:
-        run_code(code)
+        await run_code(code)
     except SystemExit:
         pass
 
@@ -102,7 +109,8 @@ impor module_yang_tidak_ada
     assert "tidak ditemukan" in error_output or "module_yang_tidak_ada" in error_output
 
 
-def test_name_not_found_in_module():
+@pytest.mark.asyncio
+async def test_name_not_found_in_module():
     """Test error when name not found in module"""
     import io
     import sys
@@ -114,7 +122,7 @@ dari matematika impor fungsi_tidak_ada
     sys.stderr = io.StringIO()
 
     try:
-        run_code(code)
+        await run_code(code)
     except SystemExit:
         pass
 
@@ -125,7 +133,8 @@ dari matematika impor fungsi_tidak_ada
     assert "fungsi_tidak_ada" in error_output or "tidak ditemukan" in error_output
 
 
-def test_custom_module():
+@pytest.mark.asyncio
+async def test_custom_module():
     """Test importing custom user module"""
     # Create a temporary directory with a module
     with tempfile.TemporaryDirectory() as tmpdir:
@@ -144,12 +153,13 @@ impor my_module
 hasil = my_module.greet("Test")
 nilai = my_module.CONSTANT
 """
-        interpreter = run_code(code, script_dir=tmpdir)
+        interpreter = await run_code(code, script_dir=tmpdir)
         assert interpreter.environment.get("hasil") == "Hello, Test!"
         assert interpreter.environment.get("nilai") == 42
 
 
-def test_module_with_class():
+@pytest.mark.asyncio
+async def test_module_with_class():
     """Test importing module with class"""
     with tempfile.TemporaryDirectory() as tmpdir:
         module_path = Path(tmpdir) / "class_module.cy"
@@ -170,24 +180,26 @@ impor class_module
 calc = class_module.Calculator()
 hasil = calc.add(5)
 """
-        interpreter = run_code(code, script_dir=tmpdir)
+        interpreter = await run_code(code, script_dir=tmpdir)
         assert interpreter.environment.get("hasil") == 5
 
 
-def test_module_caching():
+@pytest.mark.asyncio
+async def test_module_caching():
     """Test that modules are cached"""
     code = """
 impor matematika
 dari matematika impor PI
 impor matematika sebagai math
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     # Should not raise any errors
     # Module should be loaded only once
     assert "matematika" in interpreter.module_loader.cache
 
 
-def test_multiple_imports_same_module():
+@pytest.mark.asyncio
+async def test_multiple_imports_same_module():
     """Test multiple imports from same module"""
     code = """
 dari matematika impor tambah, kurang, kali, bagi
@@ -196,7 +208,7 @@ b = kurang(10, 5)
 c = kali(10, 5)
 d = bagi(10, 5)
 """
-    interpreter = run_code(code)
+    interpreter = await run_code(code)
     assert interpreter.environment.get("a") == 15
     assert interpreter.environment.get("b") == 5
     assert interpreter.environment.get("c") == 50
@@ -204,4 +216,4 @@ d = bagi(10, 5)
 
 
 if __name__ == "__main__":
-    pytest.main([__file__, "-v"])
+    asyncio.run(pytest.main([__file__, "-v"]))

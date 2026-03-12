@@ -365,6 +365,32 @@ def jarak_kota(kota1: str, kota2: str) -> Optional[str]:
     return distances.get(key1) or distances.get(key2) or "Jarak tidak tersedia"
 
 
+def hitung_umur(tanggal_lahir: str) -> int:
+    """Calculate age from birth date (YYYY-MM-DD)"""
+    try:
+        lahir = datetime.datetime.strptime(tanggal_lahir, "%Y-%m-%d")
+        sekarang = datetime.datetime.now()
+        umur = sekarang.year - lahir.year - ((sekarang.month, sekarang.day) < (lahir.month, lahir.day))
+        return umur
+    except ValueError:
+        raise CodingYokValueError("Format tanggal lahir harus YYYY-MM-DD")
+
+
+def bersihkan_teks(teks: str) -> str:
+    """Clean text from special characters, keeping only alphanumeric and basic punctuation"""
+    import re
+    # Keep alphanumeric, spaces, and basic punctuation
+    cleaned = re.sub(r'[^a-zA-Z0-9\s.,!?()-]', '', teks)
+    return cleaned.strip()
+
+
+def validasi_email(email: str) -> bool:
+    """Validate email format"""
+    import re
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return bool(re.match(pattern, email))
+
+
 def get_indonesian_functions() -> Dict[str, Any]:
     """Get all Indonesian-specific functions"""
     return {
@@ -383,6 +409,9 @@ def get_indonesian_functions() -> Dict[str, Any]:
         "validasi_nik": validasi_nik,
         "konversi_suhu": konversi_suhu,
         "jarak_kota": jarak_kota,
+        "hitung_umur": hitung_umur,
+        "bersihkan_teks": bersihkan_teks,
+        "validasi_email": validasi_email,
         # Constants
         "PROVINSI": PROVINSI_INDONESIA,
         "KOTA_BESAR": KOTA_BESAR_INDONESIA,

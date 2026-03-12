@@ -5,6 +5,7 @@ Tests classes, Indonesian features, file I/O, and web functionality
 
 import sys
 import os
+import asyncio
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
@@ -25,26 +26,27 @@ class TestAdvancedFeatures:
         """Setup for each test"""
         self.interpreter = CodingYokInterpreter()
 
-    def run_code(self, source_code):
+    async def run_code(self, source_code):
         """Helper to run CodingYok code"""
         lexer = CodingYokLexer(source_code)
         tokens = lexer.tokenize()
         parser = CodingYokParser(tokens)
         ast = parser.parse()
-        self.interpreter.interpret(ast)
+        await self.interpreter.interpret(ast)
 
-    def capture_output(self, source_code):
+    async def capture_output(self, source_code):
         """Helper to capture print output"""
         old_stdout = sys.stdout
         sys.stdout = captured_output = StringIO()
 
         try:
-            self.run_code(source_code)
+            await self.run_code(source_code)
             return captured_output.getvalue().strip()
         finally:
             sys.stdout = old_stdout
 
-    def test_class_definition_and_instantiation(self):
+    @pytest.mark.asyncio
+    async def test_class_definition_and_instantiation(self):
         """Test basic class definition and object creation"""
         code = """
         kelas Orang:
@@ -57,10 +59,11 @@ class TestAdvancedFeatures:
         orang1 = Orang("Budi")
         orang1.sapa()
         """
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         assert "Halo, saya Budi" in output
 
-    def test_class_inheritance(self):
+    @pytest.mark.asyncio
+    async def test_class_inheritance(self):
         """Test class inheritance"""
         code = """
         kelas Hewan:
@@ -77,7 +80,7 @@ class TestAdvancedFeatures:
         kucing = Kucing("Kitty")
         kucing.suara()
         """
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         assert "Kitty mengeong" in output
 
     def test_indonesian_currency_formatting(self):
@@ -105,7 +108,8 @@ class TestAdvancedFeatures:
         assert "Januari" in result
         assert "2024" in result
 
-    def test_file_operations_integration(self):
+    @pytest.mark.asyncio
+    async def test_file_operations_integration(self):
         """Test file I/O operations in CodingYok"""
         with tempfile.TemporaryDirectory() as temp_dir:
             test_file = os.path.join(temp_dir, "test.txt").replace("\\", "/")
@@ -116,10 +120,11 @@ class TestAdvancedFeatures:
             tulis(content)
             """
 
-            output = self.capture_output(code)
+            output = await self.capture_output(code)
             assert "Hello CodingYok!" in output
 
-    def test_json_operations(self):
+    @pytest.mark.asyncio
+    async def test_json_operations(self):
         """Test JSON file operations"""
         with tempfile.TemporaryDirectory() as temp_dir:
             json_file = os.path.join(temp_dir, "test.json").replace("\\", "/")
@@ -132,12 +137,13 @@ class TestAdvancedFeatures:
             tulis(loaded_data["umur"])
             """
 
-            output = self.capture_output(code)
+            output = await self.capture_output(code)
             lines = output.split("\n")
             assert "Budi" in lines
             assert "25" in lines
 
-    def test_csv_operations(self):
+    @pytest.mark.asyncio
+    async def test_csv_operations(self):
         """Test CSV file operations"""
         with tempfile.TemporaryDirectory() as temp_dir:
             csv_file = os.path.join(temp_dir, "test.csv").replace("\\", "/")
@@ -150,12 +156,13 @@ class TestAdvancedFeatures:
             tulis(loaded_data[1][0])  # Budi
             """
 
-            output = self.capture_output(code)
+            output = await self.capture_output(code)
             lines = output.split("\n")
             assert "3" in lines  # 3 rows including header
             assert "Budi" in lines
 
-    def test_pattern_matching(self):
+    @pytest.mark.asyncio
+    async def test_pattern_matching(self):
         """Test regex pattern matching"""
         code = """
         text = "Email: user@example.com dan nomor: 081234567890"
@@ -165,12 +172,13 @@ class TestAdvancedFeatures:
         tulis(phone)
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "user@example.com" in lines
         assert "081234567890" in lines
 
-    def test_validation_functions(self):
+    @pytest.mark.asyncio
+    async def test_validation_functions(self):
         """Test validation functions"""
         code = """
         tulis(validasi_email("user@example.com"))
@@ -179,14 +187,15 @@ class TestAdvancedFeatures:
         tulis(validasi_url("not-a-url"))
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "benar" in lines[0]  # Valid email
         assert "salah" in lines[1]  # Invalid email
         assert "benar" in lines[2]  # Valid URL
         assert "salah" in lines[3]  # Invalid URL
 
-    def test_indonesian_province_data(self):
+    @pytest.mark.asyncio
+    async def test_indonesian_province_data(self):
         """Test Indonesian province data functions"""
         code = """
         tulis(cek_provinsi("jakarta"))
@@ -195,13 +204,14 @@ class TestAdvancedFeatures:
         tulis(panjang(provinsi_list) > 30)  # Should have 34+ provinces
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "DKI Jakarta" in lines[0]
         assert "Jawa Barat" in lines[1]
         assert "benar" in lines[2]  # More than 30 provinces
 
-    def test_temperature_conversion(self):
+    @pytest.mark.asyncio
+    async def test_temperature_conversion(self):
         """Test temperature conversion"""
         code = """
         celsius_to_f = konversi_suhu(32, "celsius", "fahrenheit")
@@ -211,24 +221,26 @@ class TestAdvancedFeatures:
         tulis(bulat(fahrenheit_to_c, 1))
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "89.6" in lines[0]  # 32°C = 89.6°F
         assert "32.0" in lines[1]  # 89.6°F = 32°C
 
-    def test_phone_number_formatting(self):
+    @pytest.mark.asyncio
+    async def test_phone_number_formatting(self):
         """Test Indonesian phone number formatting"""
         code = """
         tulis(format_nomor_telepon("081234567890"))
         tulis(format_nomor_telepon("6281234567890"))
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "0812 3456 7890" in lines[0]
         assert "+62 812 3456 7890" in lines[1]
 
-    def test_nik_validation(self):
+    @pytest.mark.asyncio
+    async def test_nik_validation(self):
         """Test NIK validation"""
         code = """
         tulis(validasi_nik("1234567890123456"))  # Valid format
@@ -236,13 +248,14 @@ class TestAdvancedFeatures:
         tulis(validasi_nik("abcd567890123456"))  # Not digits
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "benar" in lines[0]  # Valid
         assert "salah" in lines[1]  # Too short
         assert "salah" in lines[2]  # Not digits
 
-    def test_statistics_function(self):
+    @pytest.mark.asyncio
+    async def test_statistics_function(self):
         """Test statistics calculation"""
         code = """
         data = [10, 20, 30, 40, 50]
@@ -253,14 +266,15 @@ class TestAdvancedFeatures:
         tulis(stats["maksimum"])
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         lines = output.split("\n")
         assert "30.0" in lines[0]  # Average
         assert "30.0" in lines[1]  # Median
         assert "10" in lines[2]  # Minimum
         assert "50" in lines[3]  # Maximum
 
-    def test_table_printing(self):
+    @pytest.mark.asyncio
+    async def test_table_printing(self):
         """Test table printing function"""
         code = """
         data = [["Budi", "25", "Jakarta"], ["Siti", "23", "Bandung"]]
@@ -268,13 +282,14 @@ class TestAdvancedFeatures:
         cetak_tabel(data, header)
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         assert "Nama" in output
         assert "Budi" in output
         assert "Siti" in output
         assert "|" in output  # Table formatting
 
-    def test_method_binding(self):
+    @pytest.mark.asyncio
+    async def test_method_binding(self):
         """Test method binding in classes"""
         code = """
         kelas Calculator:
@@ -294,10 +309,11 @@ class TestAdvancedFeatures:
         tulis(calc.get_value())
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         assert "15" in output
 
-    def test_complex_class_interaction(self):
+    @pytest.mark.asyncio
+    async def test_complex_class_interaction(self):
         """Test complex class interactions"""
         code = """
         kelas BankAccount:
@@ -327,5 +343,5 @@ class TestAdvancedFeatures:
         tulis(format_rupiah(account.get_saldo()))
         """
 
-        output = self.capture_output(code)
+        output = await self.capture_output(code)
         assert "Rp 1.300.000" in output  # 1,000,000 + 500,000 - 200,000

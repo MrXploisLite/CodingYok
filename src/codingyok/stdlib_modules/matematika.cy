@@ -12,7 +12,7 @@ fungsi kali(a, b):
 
 fungsi bagi(a, b):
     jika b == 0:
-        lempar Kesalahan("Tidak dapat membagi dengan nol")
+        lempar ZeroDivisionError("Tidak dapat membagi dengan nol")
     kembalikan a / b
 
 fungsi pangkat(base, exp):
@@ -20,12 +20,12 @@ fungsi pangkat(base, exp):
 
 fungsi akar_kuadrat(n):
     jika n < 0:
-        lempar Kesalahan("Tidak dapat menghitung akar kuadrat dari angka negatif")
+        lempar ValueError("Tidak dapat menghitung akar kuadrat dari angka negatif")
     kembalikan n ** 0.5
 
 fungsi faktorial(n):
     jika n < 0:
-        lempar Kesalahan("Faktorial tidak didefinisikan untuk angka negatif")
+        lempar ValueError("Faktorial tidak didefinisikan untuk angka negatif")
     jika n == 0 atau n == 1:
         kembalikan 1
     hasil = 1
