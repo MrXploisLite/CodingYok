@@ -6,6 +6,7 @@ Executes the Abstract Syntax Tree (AST)
 from typing import Any, Dict, List, Optional, Callable
 import sys
 import asyncio
+import inspect
 from .ast_nodes import *
 from .errors import *
 from .environment import Environment
@@ -48,13 +49,13 @@ class CodingYokFunction:
 
         return has_yield(self.declaration.body)
 
-    def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
+    async def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
         """Call the function with given arguments"""
         if keyword_args is None:
             keyword_args = {}
 
         if self.is_generator:
-            return self._create_generator(interpreter, arguments, keyword_args)
+            return await self._create_generator(interpreter, arguments, keyword_args)
 
         # Create new environment for function execution
         environment = Environment(self.closure)
@@ -73,7 +74,7 @@ class CodingYokFunction:
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
                 # Use default value
-                default_value = interpreter.evaluate(defaults[i])
+                default_value = await interpreter.evaluate(defaults[i])
                 environment.define(param, default_value)
             else:
                 raise CodingYokRuntimeError(
@@ -86,7 +87,7 @@ class CodingYokFunction:
             interpreter.environment = environment
 
             for statement in self.declaration.body:
-                interpreter.execute(statement)
+                await interpreter.execute(statement)
 
             return None  # No explicit return
 
@@ -95,7 +96,7 @@ class CodingYokFunction:
         finally:
             interpreter.environment = previous
 
-    def _create_generator(self, interpreter, arguments: List[Any], keyword_args: dict = None):
+    async def _create_generator(self, interpreter, arguments: List[Any], keyword_args: dict = None):
         """Create a generator object"""
         if keyword_args is None:
             keyword_args = {}
@@ -110,20 +111,20 @@ class CodingYokFunction:
             elif i < len(arguments):
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
-                default_value = interpreter.evaluate(defaults[i])
+                default_value = await interpreter.evaluate(defaults[i])
                 environment.define(param, default_value)
             else:
                 raise CodingYokRuntimeError(
                     f"Parameter '{param}' tidak memiliki nilai"
                 )
 
-        def generator():
+        async def generator():
             previous = interpreter.environment
             interpreter.environment = environment
             try:
                 for statement in self.declaration.body:
                     try:
-                        interpreter.execute(statement)
+                        await interpreter.execute(statement)
                     except YieldValue as yv:
                         yield yv.value
             finally:
@@ -161,7 +162,7 @@ class CodingYokAsyncFunction:
 
         return has_yield(self.declaration.body)
 
-    def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
+    async def call(self, interpreter, arguments: List[Any], keyword_args: dict = None) -> Any:
         """Call the async function with given arguments"""
         if keyword_args is None:
             keyword_args = {}
@@ -183,7 +184,7 @@ class CodingYokAsyncFunction:
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
                 # Use default value
-                default_value = interpreter.evaluate(defaults[i])
+                default_value = await interpreter.evaluate(defaults[i])
                 environment.define(param, default_value)
             else:
                 raise CodingYokRuntimeError(
@@ -196,16 +197,14 @@ class CodingYokAsyncFunction:
             interpreter.environment = environment
             try:
                 for statement in self.declaration.body:
-                    # For async functions, we need to handle await expressions properly
-                    # This is a simplified implementation
-                    interpreter.execute(statement)
+                    await interpreter.execute(statement)
                 return None
             except ReturnValue as return_value:
                 return return_value.value
             finally:
                 interpreter.environment = previous
 
-        return async_func()
+        return await async_func()
 
 
 class CodingYokLambda:
@@ -223,7 +222,7 @@ class CodingYokLambda:
         self.closure = closure
         self.interpreter = interpreter
 
-    def call(self, interpreter, arguments: List[Any]) -> Any:
+    async def call(self, interpreter, arguments: List[Any]) -> Any:
         """Call the lambda with given arguments"""
         if len(arguments) != len(self.parameters):
             raise CodingYokRuntimeError(
@@ -238,13 +237,14 @@ class CodingYokLambda:
         previous = interpreter.environment
         interpreter.environment = environment
         try:
-            return interpreter.evaluate(self.body)
+            return await interpreter.evaluate(self.body)
         finally:
             interpreter.environment = previous
 
     def __call__(self, *args):
         """Make lambda callable for Python's map/filter"""
         if self.interpreter:
+            # Note: This will return a coroutine!
             return self.call(self.interpreter, list(args))
         raise CodingYokRuntimeError("Lambda tidak memiliki interpreter")
 
@@ -312,32 +312,30 @@ class CodingYokInterpreter:
         # Initialize module loader
         self.module_loader = ModuleLoader(self)
 
-    def interpret(self, program: Program) -> None:
+    async def interpret(self, program: Program) -> None:
         """Interpret a program"""
         try:
-            # Check if there's an async main function to run
-            has_async_main = False
+            # Execute statements normally
             for statement in program.statements:
-                if (hasattr(statement, 'name') and statement.name == 'main' and
-                    isinstance(statement, AsyncFunctionDefinition)):
-                    has_async_main = True
-                    break
+                await self.execute(statement)
 
-            if has_async_main:
-                # Execute all statements first to define functions
-                for statement in program.statements:
-                    self.execute(statement)
+            # Check if main was defined in this specific program
+            has_main_def = any(
+                isinstance(stmt, (FunctionDefinition, AsyncFunctionDefinition))
+                and getattr(stmt, "name", None) == "main"
+                for stmt in program.statements
+            )
 
-                # Then run the async main
-                main_func = self.environment.get('main')
-                if main_func:
-                    # Run the async function
-                    coro = main_func.call(self, [], {})
-                    asyncio.run(coro)
-            else:
-                # Execute statements normally
-                for statement in program.statements:
-                    self.execute(statement)
+            if has_main_def:
+                main_func = self.environment.values.get("main")
+                if main_func and isinstance(
+                    main_func, (CodingYokAsyncFunction, CodingYokFunction)
+                ):
+                    if isinstance(main_func, CodingYokAsyncFunction):
+                        await main_func.call(self, [], {})
+                    else:
+                        main_func.call(self, [], {})
+
         except CodingYokRuntimeError as error:
             self.runtime_error(error)
 
@@ -345,47 +343,47 @@ class CodingYokInterpreter:
         """Handle runtime error"""
         print(f"Kesalahan Runtime: {error}", file=sys.stderr)
 
-    def execute(self, statement: Statement) -> None:
+    async def execute(self, statement: Statement) -> None:
         """Execute a statement"""
-        statement.accept(self)
+        await statement.accept(self)
 
-    def evaluate(self, expression: Expression) -> Any:
+    async def evaluate(self, expression: Expression) -> Any:
         """Evaluate an expression"""
-        return expression.accept(self)
+        return await expression.accept(self)
 
     # Visitor methods for statements
-    def visit_program(self, program: Program) -> None:
+    async def visit_program(self, program: Program) -> None:
         """Visit program node"""
         for statement in program.statements:
-            self.execute(statement)
+            await self.execute(statement)
 
-    def visit_expression_statement(self, stmt: ExpressionStatement) -> None:
+    async def visit_expression_statement(self, stmt: ExpressionStatement) -> None:
         """Visit expression statement"""
-        self.evaluate(stmt.expression)
+        await self.evaluate(stmt.expression)
 
-    def visit_print(self, stmt: PrintStatement) -> None:
+    async def visit_print(self, stmt: PrintStatement) -> None:
         """Visit print statement"""
         values = []
         for expr in stmt.expressions:
-            value = self.evaluate(expr)
+            value = await self.evaluate(expr)
             values.append(self.stringify(value))
 
         print(" ".join(values))
 
-    def visit_assignment(self, stmt: AssignmentStatement) -> None:
+    async def visit_assignment(self, stmt: AssignmentStatement) -> None:
         """Visit assignment statement"""
-        value = self.evaluate(stmt.value)
+        value = await self.evaluate(stmt.value)
         self.environment.define(stmt.target, value)
 
-    def visit_attribute_assignment(self, stmt) -> None:
+    async def visit_attribute_assignment(self, stmt) -> None:
         """Visit attribute assignment statement"""
         from .ast_nodes import AttributeAssignmentStatement
 
         # Type annotation for the parameter
         attr_stmt: AttributeAssignmentStatement = stmt
 
-        obj = self.evaluate(stmt.target.object)
-        value = self.evaluate(stmt.value)
+        obj = await self.evaluate(stmt.target.object)
+        value = await self.evaluate(stmt.value)
 
         if isinstance(obj, CodingYokInstance):
             obj.set(stmt.target.attribute, value)
@@ -397,11 +395,11 @@ class CodingYokInterpreter:
                 obj_type = type(obj).__name__
                 raise CodingYokAttributeError(obj_type, stmt.target.attribute)
 
-    def visit_index_assignment(self, stmt) -> None:
+    async def visit_index_assignment(self, stmt) -> None:
         """Visit index assignment statement (arr[i] = value, dict[key] = value)"""
-        obj = self.evaluate(stmt.target.object)
-        index = self.evaluate(stmt.target.index)
-        value = self.evaluate(stmt.value)
+        obj = await self.evaluate(stmt.target.object)
+        index = await self.evaluate(stmt.target.index)
+        value = await self.evaluate(stmt.value)
 
         try:
             obj[index] = value
@@ -410,92 +408,105 @@ class CodingYokInterpreter:
                 f"Tidak dapat menetapkan nilai pada indeks: {e}"
             )
 
-    def visit_slice_assignment(self, stmt) -> None:
+    async def visit_slice_assignment(self, stmt) -> None:
         """Visit slice assignment statement (arr[start:stop] = values)"""
-        obj = self.evaluate(stmt.target.object)
-        start = self.evaluate(stmt.target.start) if stmt.target.start else None
-        stop = self.evaluate(stmt.target.stop) if stmt.target.stop else None
-        step = self.evaluate(stmt.target.step) if stmt.target.step else None
-        value = self.evaluate(stmt.value)
+        obj = await self.evaluate(stmt.target.object)
+        start = await self.evaluate(stmt.target.start) if stmt.target.start else None
+        stop = await self.evaluate(stmt.target.stop) if stmt.target.stop else None
+        step = await self.evaluate(stmt.target.step) if stmt.target.step else None
+        value = await self.evaluate(stmt.value)
 
         try:
             obj[start:stop:step] = value
         except TypeError as e:
             raise CodingYokRuntimeError(f"Tidak dapat menetapkan slice: {e}")
 
-    def visit_if(self, stmt: IfStatement) -> None:
+    async def visit_if(self, stmt: IfStatement) -> None:
         """Visit if statement"""
-        condition_value = self.evaluate(stmt.condition)
+        condition_value = await self.evaluate(stmt.condition)
 
         if self.is_truthy(condition_value):
             for statement in stmt.then_branch:
-                self.execute(statement)
+                await self.execute(statement)
         else:
             # Check elif branches
             for elif_condition, elif_body in stmt.elif_branches:
-                elif_value = self.evaluate(elif_condition)
+                elif_value = await self.evaluate(elif_condition)
                 if self.is_truthy(elif_value):
                     for statement in elif_body:
-                        self.execute(statement)
+                        await self.execute(statement)
                     return
 
             # Execute else branch if present
             if stmt.else_branch:
                 for statement in stmt.else_branch:
-                    self.execute(statement)
+                    await self.execute(statement)
 
-    def visit_while(self, stmt: WhileStatement) -> None:
+    async def visit_while(self, stmt: WhileStatement) -> None:
         """Visit while statement"""
         try:
-            while self.is_truthy(self.evaluate(stmt.condition)):
+            while self.is_truthy(await self.evaluate(stmt.condition)):
                 try:
                     for statement in stmt.body:
-                        self.execute(statement)
+                        await self.execute(statement)
                 except ContinueException:
                     continue
         except BreakException:
             pass
 
-    def visit_for(self, stmt: ForStatement) -> None:
+    async def visit_for(self, stmt: ForStatement) -> None:
         """Visit for statement"""
-        iterable = self.evaluate(stmt.iterable)
+        iterable = await self.evaluate(stmt.iterable)
 
-        if not hasattr(iterable, "__iter__"):
+        if not hasattr(iterable, "__iter__") and not hasattr(iterable, "__aiter__"):
             raise CodingYokTypeError("Objek tidak dapat diiterasi")
 
-        try:
-            for item in iterable:
-                # Handle tuple unpacking in for loop
-                if isinstance(stmt.variable, list):
-                    # Tuple unpacking: untuk a, b dalam items
-                    if not hasattr(item, "__iter__") or isinstance(item, str):
-                        raise CodingYokTypeError(
-                            f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
-                            f"nilai"
-                        )
-                    item_list = list(item)
-                    if len(item_list) != len(stmt.variable):
-                        raise CodingYokValueError(
-                            f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
-                            f"nilai, mendapat {len(item_list)}"
-                        )
-                    for var, val in zip(stmt.variable, item_list):
-                        self.environment.define(var, val)
-                else:
-                    # Single variable
-                    self.environment.define(stmt.variable, item)
+        async def run_body(item):
+            # Handle tuple unpacking in for loop
+            if isinstance(stmt.variable, list):
+                # Tuple unpacking: untuk a, b dalam items
+                if not hasattr(item, "__iter__") or isinstance(item, str):
+                    raise CodingYokTypeError(
+                        f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
+                        f"nilai"
+                    )
+                item_list = list(item)
+                if len(item_list) != len(stmt.variable):
+                    raise CodingYokValueError(
+                        f"Tidak dapat unpack: diharapkan {len(stmt.variable)} "
+                        f"nilai, mendapat {len(item_list)}"
+                    )
+                for var, val in zip(stmt.variable, item_list):
+                    self.environment.define(var, val)
+            else:
+                # Single variable
+                self.environment.define(stmt.variable, item)
 
-                try:
-                    for statement in stmt.body:
-                        self.execute(statement)
-                except ContinueException:
-                    continue
+            try:
+                for statement in stmt.body:
+                    await self.execute(statement)
+            except ContinueException:
+                pass
+
+        try:
+            if hasattr(iterable, "__aiter__"):
+                async for item in iterable:
+                    try:
+                        await run_body(item)
+                    except ContinueException:
+                        continue
+            else:
+                for item in iterable:
+                    try:
+                        await run_body(item)
+                    except ContinueException:
+                        continue
         except BreakException:
             pass
 
-    def visit_tuple_unpacking(self, stmt) -> None:
+    async def visit_tuple_unpacking(self, stmt) -> None:
         """Visit tuple unpacking statement (a, b = 1, 2)"""
-        value = self.evaluate(stmt.value)
+        value = await self.evaluate(stmt.value)
 
         # Convert to list if iterable
         if hasattr(value, "__iter__") and not isinstance(value, (str, dict)):
@@ -512,93 +523,99 @@ class CodingYokInterpreter:
         for target, val in zip(stmt.targets, values):
             self.environment.define(target, val)
 
-    def visit_function_def(self, stmt: FunctionDefinition) -> None:
+    async def visit_function_def(self, stmt: FunctionDefinition) -> None:
         """Visit function definition"""
         function = CodingYokFunction(stmt, self.environment)
         self.environment.define(stmt.name, function)
 
-    def visit_async_function_def(self, stmt: AsyncFunctionDefinition) -> None:
+    async def visit_async_function_def(self, stmt: AsyncFunctionDefinition) -> None:
         """Visit async function definition"""
         function = CodingYokAsyncFunction(stmt, self.environment)
         self.environment.define(stmt.name, function)
 
-    def visit_return(self, stmt: ReturnStatement) -> None:
+    async def visit_return(self, stmt: ReturnStatement) -> None:
         """Visit return statement"""
         value = None
         if stmt.value:
-            value = self.evaluate(stmt.value)
+            value = await self.evaluate(stmt.value)
 
         raise ReturnValue(value)
 
-    def visit_break(self, stmt: BreakStatement) -> None:
+    async def visit_break(self, stmt: BreakStatement) -> None:
         """Visit break statement"""
         raise BreakException()
 
-    def visit_continue(self, stmt: ContinueStatement) -> None:
+    async def visit_continue(self, stmt: ContinueStatement) -> None:
         """Visit continue statement"""
         raise ContinueException()
 
-    def visit_pass(self, stmt: PassStatement) -> None:
+    async def visit_pass(self, stmt: PassStatement) -> None:
         """Visit pass statement"""
         pass  # Do nothing
 
-    def visit_yield(self, stmt: YieldStatement) -> None:
+    async def visit_yield(self, stmt: YieldStatement) -> None:
         """Visit yield statement"""
         value = None
         if stmt.value:
-            value = self.evaluate(stmt.value)
+            value = await self.evaluate(stmt.value)
         raise YieldValue(value)
 
-    def visit_match(self, stmt: MatchStatement) -> None:
+    async def visit_match(self, stmt: MatchStatement) -> None:
         """Visit match statement (pattern matching)"""
-        match_value = self.evaluate(stmt.value)
+        match_value = await self.evaluate(stmt.value)
 
         for case in stmt.cases:
-            if self._match_pattern(match_value, case.pattern):
-                if case.guard is None or self.is_truthy(self.evaluate(case.guard)):
+            if await self._match_pattern(match_value, case.pattern):
+                if case.guard is None or self.is_truthy(await self.evaluate(case.guard)):
                     for statement in case.body:
-                        self.execute(statement)
+                        await self.execute(statement)
                     return
 
         raise CodingYokRuntimeError(
             f"Tidak ada pola yang cocok untuk nilai: {match_value}"
         )
 
-    def _match_pattern(self, value: Any, pattern: Any) -> bool:
+    async def _match_pattern(self, value: Any, pattern: Any) -> bool:
         """Check if value matches pattern"""
         if isinstance(pattern, IdentifierExpression):
             if pattern.name == "_":
                 return True
             return True
 
-        pattern_value = self.evaluate(pattern)
+        if not hasattr(pattern, "accept"):
+            return value == pattern
+
+        pattern_value = await self.evaluate(pattern)
 
         if isinstance(pattern_value, list):
             if not isinstance(value, list):
                 return False
             if len(pattern_value) != len(value):
                 return False
-            return all(self._match_pattern(v, p) for v, p in zip(value, pattern_value))
+            for v, p in zip(value, pattern_value):
+                if not await self._match_pattern(v, p):
+                    return False
+            return True
 
         return value == pattern_value
 
-    def visit_import(self, stmt: ImportStatement) -> None:
+    async def visit_import(self, stmt: ImportStatement) -> None:
         """Visit import statement"""
         try:
-            self.module_loader.import_module(stmt.module_name, stmt.alias)
+            await self.module_loader.import_module(stmt.module_name, stmt.alias)
         except Exception as e:
             raise CodingYokRuntimeError(str(e))
 
-    def visit_from_import(self, stmt: FromImportStatement) -> None:
+    async def visit_from_import(self, stmt: FromImportStatement) -> None:
         """Visit from import statement"""
         try:
-            self.module_loader.import_from_module(
+            await self.module_loader.import_from_module(
                 stmt.module_name, stmt.names, stmt.aliases
             )
         except Exception as e:
             raise CodingYokRuntimeError(str(e))
 
-    def visit_class_def(self, stmt: ClassDefinition) -> None:
+    async def visit_class_def(self, stmt: ClassDefinition) -> None:
         """Visit class definition"""
         superclass = None
         if stmt.superclass:
@@ -616,14 +633,14 @@ class CodingYokInterpreter:
         klass = CodingYokClass(stmt.name, superclass, methods)
         self.environment.define(stmt.name, klass)
 
-    def visit_try(self, stmt: TryStatement) -> None:
+    async def visit_try(self, stmt: TryStatement) -> None:
         """Visit try statement"""
         exception_caught = False
         caught_exception = None
 
         try:
             for statement in stmt.try_block:
-                self.execute(statement)
+                await self.execute(statement)
         except Exception as e:
             exception_caught = True
             caught_exception = e
@@ -638,7 +655,7 @@ class CodingYokInterpreter:
                     self.environment = env
                     try:
                         for statement in except_clause.body:
-                            self.execute(statement)
+                            await self.execute(statement)
                         exception_caught = True
                         caught_exception = None
                         break
@@ -702,7 +719,7 @@ class CodingYokInterpreter:
                         self.environment = env
                         try:
                             for statement in except_clause.body:
-                                self.execute(statement)
+                                await self.execute(statement)
                             exception_caught = True
                             caught_exception = None
                             break
@@ -711,15 +728,15 @@ class CodingYokInterpreter:
         finally:
             if stmt.finally_block:
                 for statement in stmt.finally_block:
-                    self.execute(statement)
+                    await self.execute(statement)
 
         if caught_exception:
             raise caught_exception
 
-    def visit_raise(self, stmt: RaiseStatement) -> None:
+    async def visit_raise(self, stmt: RaiseStatement) -> None:
         """Visit raise statement"""
         if stmt.exception:
-            exception = self.evaluate(stmt.exception)
+            exception = await self.evaluate(stmt.exception)
             if isinstance(exception, str):
                 raise CodingYokRuntimeError(exception)
             elif isinstance(exception, BaseException):
@@ -752,9 +769,9 @@ class CodingYokInterpreter:
         else:
             raise CodingYokRuntimeError("lempar statement tanpa exception")
 
-    def visit_with(self, stmt: WithStatement) -> None:
+    async def visit_with(self, stmt: WithStatement) -> None:
         """Visit with statement"""
-        context_manager = self.evaluate(stmt.context_expr)
+        context_manager = await self.evaluate(stmt.context_expr)
 
         enter_method = None
         exit_method = None
@@ -767,7 +784,7 @@ class CodingYokInterpreter:
                 if stmt.target:
                     self.environment.define(stmt.target, context_manager)
                 for statement in stmt.body:
-                    self.execute(statement)
+                    await self.execute(statement)
                 return
         elif hasattr(context_manager, "__enter__") and hasattr(
             context_manager, "__exit__"
@@ -778,15 +795,18 @@ class CodingYokInterpreter:
             if stmt.target:
                 self.environment.define(stmt.target, context_manager)
             for statement in stmt.body:
-                self.execute(statement)
+                await self.execute(statement)
             return
 
         context_value = None
         if enter_method:
             if hasattr(enter_method, "call"):
-                context_value = enter_method.call(self, [])
+                context_value = await enter_method.call(self, [])
             elif callable(enter_method):
-                context_value = enter_method()
+                if inspect.iscoroutinefunction(enter_method):
+                    context_value = await enter_method()
+                else:
+                    context_value = enter_method()
 
         if stmt.target:
             self.environment.define(
@@ -797,32 +817,35 @@ class CodingYokInterpreter:
         exception_occurred = None
         try:
             for statement in stmt.body:
-                self.execute(statement)
+                await self.execute(statement)
         except Exception as e:
             exception_occurred = e
         finally:
             if exit_method:
                 if hasattr(exit_method, "call"):
-                    exit_method.call(self, [None, None, None])
+                    await exit_method.call(self, [None, None, None])
                 elif callable(exit_method):
-                    exit_method(None, None, None)
+                    if inspect.iscoroutinefunction(exit_method):
+                        await exit_method(None, None, None)
+                    else:
+                        exit_method(None, None, None)
 
         if exception_occurred:
             raise exception_occurred
 
     # Visitor methods for expressions
-    def visit_literal(self, expr: LiteralExpression) -> Any:
+    async def visit_literal(self, expr: LiteralExpression) -> Any:
         """Visit literal expression"""
         return expr.value
 
-    def visit_identifier(self, expr: IdentifierExpression) -> Any:
+    async def visit_identifier(self, expr: IdentifierExpression) -> Any:
         """Visit identifier expression"""
         return self.environment.get(expr.name)
 
-    def visit_binary(self, expr: BinaryExpression) -> Any:
+    async def visit_binary(self, expr: BinaryExpression) -> Any:
         """Visit binary expression"""
-        left = self.evaluate(expr.left)
-        right = self.evaluate(expr.right)
+        left = await self.evaluate(expr.left)
+        right = await self.evaluate(expr.right)
 
         operator = expr.operator
 
@@ -873,23 +896,23 @@ class CodingYokInterpreter:
         else:
             raise CodingYokRuntimeError(f"Operator binary tidak dikenal: {operator}")
 
-    def visit_ternary(self, expr) -> Any:
+    async def visit_ternary(self, expr) -> Any:
         """Visit ternary expression (value jika condition kalau_tidak other)"""
-        condition = self.evaluate(expr.condition)
+        condition = await self.evaluate(expr.condition)
         if self.is_truthy(condition):
-            return self.evaluate(expr.true_value)
+            return await self.evaluate(expr.true_value)
         else:
-            return self.evaluate(expr.false_value)
+            return await self.evaluate(expr.false_value)
 
-    def visit_walrus(self, expr) -> Any:
+    async def visit_walrus(self, expr) -> Any:
         """Visit walrus expression (name := value)"""
-        value = self.evaluate(expr.value)
+        value = await self.evaluate(expr.value)
         self.environment.define(expr.name, value)
         return value
 
-    def visit_unary(self, expr: UnaryExpression) -> Any:
+    async def visit_unary(self, expr: UnaryExpression) -> Any:
         """Visit unary expression"""
-        operand = self.evaluate(expr.operand)
+        operand = await self.evaluate(expr.operand)
 
         if expr.operator == "-":
             return -operand
@@ -900,38 +923,53 @@ class CodingYokInterpreter:
                 f"Operator unary tidak dikenal: {expr.operator}"
             )
 
-    def visit_call(self, expr: CallExpression) -> Any:
+    async def visit_call(self, expr: CallExpression) -> Any:
         """Visit call expression"""
-        callee = self.evaluate(expr.callee)
+        callee = await self.evaluate(expr.callee)
 
         arguments = []
         for arg in expr.arguments:
-            arguments.append(self.evaluate(arg))
+            arguments.append(await self.evaluate(arg))
 
         # Evaluate keyword arguments
         keyword_args = {}
         for name, value_expr in expr.keyword_args.items():
-            keyword_args[name] = self.evaluate(value_expr)
+            keyword_args[name] = await self.evaluate(value_expr)
 
-        if isinstance(callee, CodingYokFunction):
-            return callee.call(self, arguments, keyword_args)
+        if isinstance(callee, (CodingYokFunction, CodingYokAsyncFunction)):
+            res = callee.call(self, arguments, keyword_args)
+            if asyncio.iscoroutine(res):
+                return await res
+            return res
         elif isinstance(callee, CodingYokClass):
-            return callee.call(self, arguments, keyword_args)
+            res = callee.call(self, arguments, keyword_args)
+            if asyncio.iscoroutine(res):
+                return await res
+            return res
         elif hasattr(callee, "call"):
             # Check if call method accepts keyword_args
-            import inspect
             sig = inspect.signature(callee.call)
             if len(sig.parameters) >= 3:
-                return callee.call(self, arguments, keyword_args)
-            return callee.call(self, arguments)
+                res = callee.call(self, arguments, keyword_args)
+            else:
+                res = callee.call(self, arguments)
+
+            if asyncio.iscoroutine(res):
+                return await res
+            return res
         elif callable(callee):
-            return callee(*arguments, **keyword_args)
+            if inspect.iscoroutinefunction(callee):
+                return await callee(*arguments, **keyword_args)
+            res = callee(*arguments, **keyword_args)
+            if asyncio.iscoroutine(res):
+                return await res
+            return res
         else:
             raise CodingYokTypeError("Objek tidak dapat dipanggil")
 
-    def visit_attribute(self, expr: AttributeExpression) -> Any:
+    async def visit_attribute(self, expr: AttributeExpression) -> Any:
         """Visit attribute expression"""
-        obj = self.evaluate(expr.object)
+        obj = await self.evaluate(expr.object)
 
         if isinstance(obj, ModuleObject):
             try:
@@ -948,10 +986,10 @@ class CodingYokInterpreter:
                 obj_type = obj.klass.name
             raise CodingYokAttributeError(obj_type, expr.attribute)
 
-    def visit_index(self, expr: IndexExpression) -> Any:
+    async def visit_index(self, expr: IndexExpression) -> Any:
         """Visit index expression"""
-        obj = self.evaluate(expr.object)
-        index = self.evaluate(expr.index)
+        obj = await self.evaluate(expr.object)
+        index = await self.evaluate(expr.index)
 
         try:
             return obj[index]
@@ -963,43 +1001,43 @@ class CodingYokInterpreter:
             else:
                 raise CodingYokTypeError("Objek tidak mendukung pengindeksan")
 
-    def visit_slice(self, expr) -> Any:
+    async def visit_slice(self, expr) -> Any:
         """Visit slice expression (arr[start:stop:step])"""
-        obj = self.evaluate(expr.object)
+        obj = await self.evaluate(expr.object)
 
-        start = self.evaluate(expr.start) if expr.start else None
-        stop = self.evaluate(expr.stop) if expr.stop else None
-        step = self.evaluate(expr.step) if expr.step else None
+        start = await self.evaluate(expr.start) if expr.start else None
+        stop = await self.evaluate(expr.stop) if expr.stop else None
+        step = await self.evaluate(expr.step) if expr.step else None
 
         try:
             return obj[start:stop:step]
         except TypeError:
             raise CodingYokTypeError("Objek tidak mendukung slicing")
 
-    def visit_list(self, expr: ListExpression) -> List[Any]:
+    async def visit_list(self, expr: ListExpression) -> List[Any]:
         """Visit list expression"""
         elements = []
         for element in expr.elements:
-            elements.append(self.evaluate(element))
+            elements.append(await self.evaluate(element))
         return elements
 
-    def visit_tuple(self, expr) -> tuple:
+    async def visit_tuple(self, expr) -> tuple:
         """Visit tuple expression"""
         elements = []
         for element in expr.elements:
-            elements.append(self.evaluate(element))
+            elements.append(await self.evaluate(element))
         return tuple(elements)
 
-    def visit_dict(self, expr: DictExpression) -> Dict[Any, Any]:
+    async def visit_dict(self, expr: DictExpression) -> Dict[Any, Any]:
         """Visit dictionary expression"""
         result = {}
         for key_expr, value_expr in expr.pairs:
-            key = self.evaluate(key_expr)
-            value = self.evaluate(value_expr)
+            key = await self.evaluate(key_expr)
+            value = await self.evaluate(value_expr)
             result[key] = value
         return result
 
-    def visit_fstring(self, expr: FStringExpression) -> str:
+    async def visit_fstring(self, expr: FStringExpression) -> str:
         """Visit f-string expression"""
         result = ""
         for part in expr.parts:
@@ -1007,14 +1045,14 @@ class CodingYokInterpreter:
                 result += part
             else:
                 # Evaluate the expression and convert to string
-                value = self.evaluate(part)
+                value = await self.evaluate(part)
                 result += self.stringify(value)
         return result
 
-    def visit_list_comprehension(self, expr: ListComprehension) -> List[Any]:
+    async def visit_list_comprehension(self, expr: ListComprehension) -> List[Any]:
         """Visit list comprehension"""
         result = []
-        iterable = self.evaluate(expr.iterable)
+        iterable = await self.evaluate(expr.iterable)
 
         if not hasattr(iterable, "__iter__"):
             raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
@@ -1028,18 +1066,18 @@ class CodingYokInterpreter:
                 self.environment.define(expr.variable, item)
 
                 if expr.condition is None or self.is_truthy(
-                    self.evaluate(expr.condition)
+                    await self.evaluate(expr.condition)
                 ):
-                    result.append(self.evaluate(expr.element))
+                    result.append(await self.evaluate(expr.element))
         finally:
             self.environment = prev_env
 
         return result
 
-    def visit_dict_comprehension(self, expr: DictComprehension) -> Dict[Any, Any]:
+    async def visit_dict_comprehension(self, expr: DictComprehension) -> Dict[Any, Any]:
         """Visit dict comprehension"""
         result = {}
-        iterable = self.evaluate(expr.iterable)
+        iterable = await self.evaluate(expr.iterable)
 
         if not hasattr(iterable, "__iter__"):
             raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
@@ -1053,27 +1091,27 @@ class CodingYokInterpreter:
                 self.environment.define(expr.variable, item)
 
                 if expr.condition is None or self.is_truthy(
-                    self.evaluate(expr.condition)
+                    await self.evaluate(expr.condition)
                 ):
-                    key = self.evaluate(expr.key)
-                    value = self.evaluate(expr.value)
+                    key = await self.evaluate(expr.key)
+                    value = await self.evaluate(expr.value)
                     result[key] = value
         finally:
             self.environment = prev_env
 
         return result
 
-    def visit_set(self, expr: SetExpression) -> set:
+    async def visit_set(self, expr: SetExpression) -> set:
         """Visit set expression"""
         elements = []
         for element in expr.elements:
-            elements.append(self.evaluate(element))
+            elements.append(await self.evaluate(element))
         return set(elements)
 
-    def visit_set_comprehension(self, expr: SetComprehension) -> set:
+    async def visit_set_comprehension(self, expr: SetComprehension) -> set:
         """Visit set comprehension"""
         result = set()
-        iterable = self.evaluate(expr.iterable)
+        iterable = await self.evaluate(expr.iterable)
 
         if not hasattr(iterable, "__iter__"):
             raise CodingYokTypeError("Objek tidak dapat diiterasi dalam comprehension")
@@ -1087,24 +1125,24 @@ class CodingYokInterpreter:
                 self.environment.define(expr.variable, item)
 
                 if expr.condition is None or self.is_truthy(
-                    self.evaluate(expr.condition)
+                    await self.evaluate(expr.condition)
                 ):
-                    result.add(self.evaluate(expr.element))
+                    result.add(await self.evaluate(expr.element))
         finally:
             self.environment = prev_env
 
         return result
 
-    def visit_lambda(self, expr: LambdaExpression) -> CodingYokLambda:
+    async def visit_lambda(self, expr: LambdaExpression) -> CodingYokLambda:
         """Visit lambda expression"""
         return CodingYokLambda(expr.parameters, expr.body, self.environment, self)
 
-    def visit_await(self, expr: AwaitExpression) -> Any:
+    async def visit_await(self, expr: AwaitExpression) -> Any:
         """Visit await expression"""
-        # For now, just return the evaluated expression
-        # A full implementation would properly handle async/await integration
-        # This is a simplified version that allows the syntax to work
-        return self.evaluate(expr.expression)
+        value = await self.evaluate(expr.expression)
+        if asyncio.iscoroutine(value):
+            return await value
+        return value
 
     # Helper methods
     def is_truthy(self, value: Any) -> bool:

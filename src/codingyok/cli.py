@@ -4,6 +4,7 @@ Command Line Interface for CodingYok
 
 import sys
 import argparse
+import asyncio
 from pathlib import Path
 from typing import Optional
 
@@ -14,15 +15,15 @@ from .errors import CodingYokError, format_traceback
 from . import __version__
 
 
-def run_file(file_path: str) -> None:
-    """Run a CodingYok file"""
+async def run_file_async(file_path: str) -> None:
+    """Run a CodingYok file asynchronously"""
     try:
         with open(file_path, "r", encoding="utf-8") as file:
             source_code = file.read()
 
         # Get the directory of the script for module imports
         script_dir = str(Path(file_path).parent.absolute())
-        run_code(source_code, file_path, script_dir)
+        await run_code_async(source_code, file_path, script_dir)
 
     except FileNotFoundError:
         print(f"Error: File '{file_path}' tidak ditemukan.", file=sys.stderr)
@@ -35,10 +36,10 @@ def run_file(file_path: str) -> None:
         sys.exit(1)
 
 
-def run_code(
+async def run_code_async(
     source_code: str, filename: str = "<stdin>", script_dir: Optional[str] = None
 ) -> None:
-    """Run CodingYok source code"""
+    """Run CodingYok source code asynchronously"""
     try:
         # Tokenize
         lexer = CodingYokLexer(source_code)
@@ -50,7 +51,7 @@ def run_code(
 
         # Interpret
         interpreter = CodingYokInterpreter(script_dir=script_dir)
-        interpreter.interpret(ast)
+        await interpreter.interpret(ast)
 
     except CodingYokError as error:
         source_lines = source_code.splitlines()
@@ -62,8 +63,8 @@ def run_code(
         sys.exit(1)
 
 
-def run_repl() -> None:
-    """Run interactive REPL"""
+async def run_repl_async() -> None:
+    """Run interactive REPL asynchronously"""
     print(f"CodingYok v{__version__} - Bahasa Pemrograman Indonesia")
     print("Ketik 'keluar()' atau tekan Ctrl+C untuk keluar.")
     print("=" * 50)
@@ -91,7 +92,7 @@ def run_repl() -> None:
                 parser = CodingYokParser(tokens)
                 ast = parser.parse()
 
-                interpreter.interpret(ast)
+                await interpreter.interpret(ast)
 
             except CodingYokError as error:
                 source_lines = [line]
@@ -187,9 +188,9 @@ def main() -> None:
         if not args.file.endswith(".cy"):
             print("Warning: File tidak memiliki ekstensi .cy", file=sys.stderr)
 
-        run_file(args.file)
+        asyncio.run(run_file_async(args.file))
     else:
-        run_repl()
+        asyncio.run(run_repl_async())
 
 
 if __name__ == "__main__":

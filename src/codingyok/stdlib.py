@@ -429,6 +429,32 @@ def async_tidur(detik: float):
     return asyncio.sleep(detik)
 
 
+async def async_baca_file(filepath: str) -> str:
+    """Read file asynchronously"""
+    try:
+        import aiofiles
+        async with aiofiles.open(filepath, mode='r', encoding='utf-8') as f:
+            return await f.read()
+    except ImportError:
+        # Fallback to synchronous reading if aiofiles is not installed
+        with open(filepath, 'r', encoding='utf-8') as f:
+            return f.read()
+
+
+async def async_ambil(url: str) -> str:
+    """Async HTTP GET request"""
+    try:
+        import aiohttp
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                return await response.text()
+    except ImportError:
+        # Fallback to synchronous request if aiohttp is not installed
+        import urllib.request
+        with urllib.request.urlopen(url) as response:
+            return response.read().decode('utf-8')
+
+
 def get_builtin_functions() -> Dict[str, Any]:
     """Get all built-in functions"""
     return {
@@ -463,6 +489,8 @@ def get_builtin_functions() -> Dict[str, Any]:
         "waktu_sekarang": waktu_sekarang,
         "tidur": tidur,
         "async_tidur": async_tidur,
+        "async_baca_file": async_baca_file,
+        "async_ambil": async_ambil,
         "tanggal_sekarang": tanggal_sekarang,
         # Random functions
         "acak": acak,

@@ -22,7 +22,7 @@ class CodingYokClass:
         self.superclass = superclass
         self.methods = methods
 
-    def call(
+    async def call(
         self,
         interpreter: "CodingYokInterpreter",
         arguments: List[Any],
@@ -37,7 +37,7 @@ class CodingYokClass:
         # Call __init__ if it exists
         initializer = self.find_method("__init__")
         if initializer:
-            initializer.bind(instance).call(interpreter, arguments, keyword_args)
+            await initializer.bind(instance).call(interpreter, arguments, keyword_args)
 
         return instance
 
@@ -88,7 +88,7 @@ class CodingYokBoundMethod:
         self.instance = instance
         self.method = method
 
-    def call(
+    async def call(
         self,
         interpreter: "CodingYokInterpreter",
         arguments: List[Any],
@@ -98,7 +98,7 @@ class CodingYokBoundMethod:
         if keyword_args is None:
             keyword_args = {}
         # Add 'diri' (self) as first argument
-        return self.method.call(interpreter, [self.instance] + arguments, keyword_args)
+        return await self.method.call(interpreter, [self.instance] + arguments, keyword_args)
 
     def __str__(self) -> str:
         return f"<bound method {self.method.declaration.name}>"
@@ -116,7 +116,7 @@ class CodingYokMethod:
         """Bind this method to an instance"""
         return CodingYokBoundMethod(instance, self)
 
-    def call(
+    async def call(
         self,
         interpreter: "CodingYokInterpreter",
         arguments: List[Any],
@@ -142,7 +142,7 @@ class CodingYokMethod:
             elif i < len(arguments):
                 environment.define(param, arguments[i])
             elif i < len(defaults) and defaults[i] is not None:
-                default_value = interpreter.evaluate(defaults[i])  # type: ignore
+                default_value = await interpreter.evaluate(defaults[i])  # type: ignore
                 environment.define(param, default_value)
             else:
                 raise CodingYokRuntimeError(f"Parameter '{param}' tidak memiliki nilai")
@@ -153,7 +153,7 @@ class CodingYokMethod:
             interpreter.environment = environment
 
             for statement in self.declaration.body:
-                interpreter.execute(statement)
+                await interpreter.execute(statement)
 
             return None  # No explicit return
 
